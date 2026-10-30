@@ -2,6 +2,8 @@
 
 ## English
 
+Temporary test site: [test.abdielaldana.com](https://test.abdielaldana.com).
+
 AnotherDungeon is a dungeon exploration game for **Game Boy Advance**, written
 in C++ with [Butano](https://github.com/GValiente/butano). Each run generates
 floors and room connections from a seed. The player explores, finds items and
@@ -98,6 +100,8 @@ elsewhere. Then set `"background": "templo_1"` in the room JSON and build the
 game. Running the command again with the same name does not duplicate entries.
 
 ## Español
+
+Sitio de prueba temporal: [test.abdielaldana.com](https://test.abdielaldana.com).
 
 Juego de exploración de mazmorras para **Game Boy Advance**, desarrollado en C++
 con [Butano](https://github.com/GValiente/butano). Cada partida genera pisos y
