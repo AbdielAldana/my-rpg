@@ -1,0 +1,1 @@
+hability_trapdoorback_icon_bn_gfx.o: hability_trapdoorback_icon_bn_gfx.s

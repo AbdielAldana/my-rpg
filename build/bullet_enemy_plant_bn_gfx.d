@@ -1,0 +1,1 @@
+bullet_enemy_plant_bn_gfx.o: bullet_enemy_plant_bn_gfx.s

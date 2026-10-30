@@ -1,0 +1,681 @@
+{
+  "format": "anotherdungeon-room",
+  "schemaVersion": 2,
+  "id": "0805ebc9-a0fb-41f5-a848-6c09785f4c88",
+  "name": "Infierno 1",
+  "description": "Nams",
+  "width": 256,
+  "height": 256,
+  "tileSize": 16,
+  "coordinateSystem": "top-left-pixels",
+  "background": "room2",
+  "backgroundCrop": {
+    "x": 0,
+    "y": 0,
+    "width": 256,
+    "height": 256
+  },
+  "gameGrid": {
+    "x": 8,
+    "y": 48,
+    "cellSize": 16,
+    "columns": 15,
+    "rows": 10
+  },
+  "rules": {
+    "roomType": "standard",
+    "onlyTheseSides": true,
+    "allowedDoorSides": [
+      "left",
+      "right",
+      "up",
+      "down"
+    ],
+    "access": "normal"
+  },
+  "spawn": null,
+  "tiles": [],
+  "collisions": [],
+  "objects": [
+    {
+      "id": "9a178d0b-0bf7-4365-aa01-d8938788038f",
+      "assetId": "rock",
+      "x": 56,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "bbc300a5-ba14-48f9-bbe8-655263911e0f",
+      "assetId": "rock",
+      "x": 56,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "1f08d3c0-c64d-407a-9097-b8e3b20a387d",
+      "assetId": "rock",
+      "x": 56,
+      "y": 144,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "6a70dfe3-334a-41da-878c-cff91dcaf29a",
+      "assetId": "rock",
+      "x": 56,
+      "y": 128,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "2f921f40-b058-4aa0-adf0-ca07ba374590",
+      "assetId": "rock",
+      "x": 56,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "48b2bdd8-b478-4a69-9171-4c8b289cb0c8",
+      "assetId": "rock",
+      "x": 56,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "8740a6d4-c1b3-4523-8e14-982934eb15d4",
+      "assetId": "rock",
+      "x": 56,
+      "y": 80,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "95bdaf26-6669-4cc0-823b-aeb0cd278c42",
+      "assetId": "rock",
+      "x": 88,
+      "y": 64,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "6407e4f4-3227-4cbf-a329-48761ca418e0",
+      "assetId": "rock",
+      "x": 88,
+      "y": 80,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "5dad6aee-c0a7-4047-b84c-8a1880fe7c84",
+      "assetId": "rock",
+      "x": 88,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "373d2ea0-8a81-4105-a29a-c47593f6b15b",
+      "assetId": "rock",
+      "x": 88,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "add1cbe7-5531-4b64-800c-2f4a8c34ce97",
+      "assetId": "rock",
+      "x": 88,
+      "y": 128,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "00e926df-7da5-415f-99f4-c2d335df1cf0",
+      "assetId": "rock",
+      "x": 88,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "0881837e-0b34-460d-8f92-c3bb434822b2",
+      "assetId": "rock",
+      "x": 88,
+      "y": 144,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "6e487667-3c70-43a3-8b9d-9f5bf6d08ea6",
+      "assetId": "rock",
+      "x": 184,
+      "y": 64,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "80b97909-e9fe-4c70-91c1-f746c5146240",
+      "assetId": "rock",
+      "x": 184,
+      "y": 80,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "eb30c2e6-c492-4767-9804-d6dc145168ab",
+      "assetId": "rock",
+      "x": 184,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "9c72a3d7-1df2-4f6e-91c4-fe155c8570ed",
+      "assetId": "rock",
+      "x": 184,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "51aef7c8-334f-4bf4-b159-ab1fd1d83cd4",
+      "assetId": "rock",
+      "x": 184,
+      "y": 144,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "406b40de-adb4-47e6-a4f3-7ad6c78cdf95",
+      "assetId": "rock",
+      "x": 184,
+      "y": 128,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "43f69627-1dd5-4170-b42e-594d2410d658",
+      "assetId": "rock",
+      "x": 184,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "6cd15d1e-33d9-4025-af59-7e752bd380c0",
+      "assetId": "rock",
+      "x": 152,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "d58a5072-9446-4683-9c42-34dd18d79ca0",
+      "assetId": "rock",
+      "x": 152,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "4a86ebe4-7c45-4765-b853-8a197c44a139",
+      "assetId": "rock",
+      "x": 152,
+      "y": 144,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "9668a5cd-537a-443e-b879-48501a9980b1",
+      "assetId": "rock",
+      "x": 152,
+      "y": 128,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "56ed545a-fd01-4535-9ccf-0a1ac5f6f9aa",
+      "assetId": "rock",
+      "x": 152,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "0dbd5f01-6e8e-4b47-b673-a5051d71519e",
+      "assetId": "rock",
+      "x": 152,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "f59acbdb-c624-4161-9a4e-4ee4a6fcbbc7",
+      "assetId": "rock",
+      "x": 152,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "155fdc4d-d6b7-41b9-8e02-8f78b22fdf96",
+      "assetId": "rock",
+      "x": 152,
+      "y": 80,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "63b32491-c976-4b6e-814f-b8e55b06a443",
+      "assetId": "bat",
+      "x": 24,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "behavior": null
+    },
+    {
+      "id": "6ca3851c-6b00-47d4-a4e3-957354e24213",
+      "assetId": "bat",
+      "x": 24,
+      "y": 64,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "behavior": null
+    },
+    {
+      "id": "66dd03c3-1a38-4079-a58b-b8388be352c8",
+      "assetId": "bat",
+      "x": 216,
+      "y": 64,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "behavior": null
+    },
+    {
+      "id": "ecd830e3-e607-4e5a-9932-1148c8ddd75f",
+      "assetId": "bat",
+      "x": 216,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "behavior": null
+    },
+    {
+      "id": "2d9a3252-7e02-4ac8-b662-614605cc4319",
+      "assetId": "spikes",
+      "x": 120,
+      "y": 128,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "hazard",
+      "alwaysActive": false,
+      "behavior": null
+    },
+    {
+      "id": "cffd27fa-1388-4aea-8a1e-7d96b008f8be",
+      "assetId": "spikes",
+      "x": 120,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "hazard",
+      "alwaysActive": false,
+      "behavior": null
+    }
+  ],
+  "markers": [
+    {
+      "id": "e89f1706-8cc3-40b9-b493-d5db6055d653",
+      "type": "Q",
+      "x": 126,
+      "y": 166
+    }
+  ]
+}

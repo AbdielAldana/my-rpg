@@ -1,0 +1,2 @@
+cheest_16x16_animate_3frames_bn_gfx.o: \
+ cheest_16x16_animate_3frames_bn_gfx.s

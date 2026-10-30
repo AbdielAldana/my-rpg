@@ -1,0 +1,1 @@
+hability_stoptime_icon_bn_gfx.o: hability_stoptime_icon_bn_gfx.s

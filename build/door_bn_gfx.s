@@ -1,0 +1,39 @@
+
+@{{BLOCK(door_bn_gfx)
+
+@=======================================================================
+@
+@	door_bn_gfx, 16x32@4, 
+@	+ palette 16 entries, not compressed
+@	+ 8 tiles Metatiled by 2x4 not compressed
+@	Total size: 32 + 256 = 288
+@
+@	Time-stamp: 2026-10-25, 14:41:54
+@	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
+@	( http://www.coranac.com/projects/#grit )
+@
+@=======================================================================
+
+	.section .rodata
+	.align	2
+	.global door_bn_gfxTiles		@ 256 unsigned chars
+	.hidden door_bn_gfxTiles
+door_bn_gfxTiles:
+	.word 0x00000000,0x00000000,0x44444444,0x44444444,0x11224113,0x22224133,0x12224333,0x44444444
+	.word 0x00000000,0x00000000,0x44444444,0x44444444,0x22221111,0x22222211,0x22111111,0x44444444
+	.word 0x44442411,0x44442213,0x44444213,0x44444233,0x44444233,0x44444233,0x44444233,0x44444233
+	.word 0x22244444,0x12224444,0x11222444,0x11222444,0x11122244,0x11122244,0x11122244,0x11122244
+	.word 0x44444233,0x44444233,0x44444233,0x44444233,0x44444233,0x44442213,0x44442413,0x44442411
+	.word 0x11122244,0x11122244,0x11122244,0x11122244,0x11222444,0x11222444,0x12224444,0x22244444
+	.word 0x44444444,0x11224133,0x22224333,0x12224333,0x44444444,0x44444444,0x00000000,0x00000000
+	.word 0x44444444,0x22221111,0x22222211,0x22111111,0x44444444,0x44444444,0x00000000,0x00000000
+
+	.section .rodata
+	.align	2
+	.global door_bn_gfxPal		@ 32 unsigned chars
+	.hidden door_bn_gfxPal
+door_bn_gfxPal:
+	.hword 0x03E0,0x368F,0x260B,0x4F5A,0x110B,0x3EF9,0x14C7,0x0000
+	.hword 0x0421,0x0421,0x0421,0x0421,0x0421,0x0421,0x0421,0x0421
+
+@}}BLOCK(door_bn_gfx)

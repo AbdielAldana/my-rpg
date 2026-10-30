@@ -1,0 +1,18 @@
+bmp16_drawg_b1cs.o: \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/src/tte/bmp16_drawg_b1cs.c \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_memdef.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_tte.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_memmap.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_types.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_surface.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_core.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_memdef.h \
+ C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_warn.h
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_memdef.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_tte.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_memmap.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_types.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_surface.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_core.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_memdef.h:
+C:/GBA/butano/butano/hw/3rd_party/libtonc/include/tonc_warn.h:

@@ -1,0 +1,59 @@
+{
+  "format": "anotherdungeon-room",
+  "schemaVersion": 2,
+  "id": "299e46bb-a870-499a-9ab7-551dcfd4de9e",
+  "name": "Boss Random 1",
+  "description": "",
+  "width": 256,
+  "height": 256,
+  "tileSize": 16,
+  "coordinateSystem": "top-left-pixels",
+  "background": "boss_2",
+  "backgroundCrop": {
+    "x": 0,
+    "y": 0,
+    "width": 256,
+    "height": 256
+  },
+  "gameGrid": {
+    "x": 8,
+    "y": 48,
+    "cellSize": 16,
+    "columns": 15,
+    "rows": 10
+  },
+  "rules": {
+    "roomType": "boss",
+    "onlyTheseSides": true,
+    "allowedDoorSides": [
+      "down"
+    ],
+    "access": "three_levers"
+  },
+  "spawn": null,
+  "tiles": [],
+  "collisions": [],
+  "objects": [
+    {
+      "id": "21d2196c-23ba-4857-b720-6c492c960f2e",
+      "assetId": "door",
+      "x": 184,
+      "y": 192,
+      "frame": 0,
+      "rotation": 90,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 0,
+        "y": 24,
+        "width": 16,
+        "height": 8
+      },
+      "role": "door",
+      "side": null,
+      "rule": null,
+      "behavior": null
+    }
+  ],
+  "markers": []
+}

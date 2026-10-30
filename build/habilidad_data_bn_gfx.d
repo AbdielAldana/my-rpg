@@ -1,0 +1,1 @@
+habilidad_data_bn_gfx.o: habilidad_data_bn_gfx.s

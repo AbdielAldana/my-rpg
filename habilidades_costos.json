@@ -1,0 +1,83 @@
+{
+  "unidad_sprint": "frames",
+  "capacidad_sprint_frames": 600,
+  "niveles_maximos": 5,
+  "progresion_costos": {
+    "tipo": "porcentaje",
+    "reduccion_por_nivel": 10,
+    "costo_minimo_sprint": 60,
+    "costo_minimo_energia": 1
+  },
+  "habilidades": {
+    "dash": {
+      "recurso": "sprint",
+      "niveles": {
+        "1": { "costo": 180, "porcentaje_sprint": 30 },
+        "2": { "costo": 162, "porcentaje_sprint": 27 },
+        "3": { "costo": 144, "porcentaje_sprint": 24 },
+        "4": { "costo": 126, "porcentaje_sprint": 21 },
+        "5": { "costo": 108, "porcentaje_sprint": 18 }
+      }
+    },
+    "detener_tiempo": {
+      "recurso": "sprint",
+      "niveles": {
+        "1": { "costo": 200, "porcentaje_sprint": 33.33 },
+        "2": { "costo": 180, "porcentaje_sprint": 30 },
+        "3": { "costo": 160, "porcentaje_sprint": 26.67 },
+        "4": { "costo": 140, "porcentaje_sprint": 23.33 },
+        "5": { "costo": 120, "porcentaje_sprint": 20 }
+      }
+    },
+    "trampilla_regreso": {
+      "recurso": "sprint",
+      "niveles": {
+        "1": { "costo": 240, "porcentaje_sprint": 40 },
+        "2": { "costo": 216, "porcentaje_sprint": 36 },
+        "3": { "costo": 192, "porcentaje_sprint": 32 },
+        "4": { "costo": 168, "porcentaje_sprint": 28 },
+        "5": { "costo": 144, "porcentaje_sprint": 24 }
+      }
+    },
+    "revelar_mapa": {
+      "recurso": "sprint",
+      "niveles": {
+        "1": { "costo": 400, "porcentaje_sprint": 66.67 },
+        "2": { "costo": 360, "porcentaje_sprint": 60 },
+        "3": { "costo": 320, "porcentaje_sprint": 53.33 },
+        "4": { "costo": 280, "porcentaje_sprint": 46.67 },
+        "5": { "costo": 240, "porcentaje_sprint": 40 }
+      }
+    },
+    "llave_maestra": {
+      "recurso": "sprint",
+      "niveles": {
+        "1": { "costo": 300, "porcentaje_sprint": 50 },
+        "2": { "costo": 270, "porcentaje_sprint": 45 },
+        "3": { "costo": 240, "porcentaje_sprint": 40 },
+        "4": { "costo": 210, "porcentaje_sprint": 35 },
+        "5": { "costo": 180, "porcentaje_sprint": 30 }
+      }
+    },
+    "bomba": {
+      "recurso": "energia",
+      "niveles": {
+        "1": { "costo": 3 },
+        "2": { "costo": 2 },
+        "3": { "costo": 2 },
+        "4": { "costo": 1 },
+        "5": { "costo": 1 }
+      }
+    },
+    "familiar": {
+      "recurso": "sprint",
+      "niveles": {
+        "1": { "costo": 180, "porcentaje_sprint": 30 },
+        "2": { "costo": 162, "porcentaje_sprint": 27 },
+        "3": { "costo": 144, "porcentaje_sprint": 24 },
+        "4": { "costo": 126, "porcentaje_sprint": 21 },
+        "5": { "costo": 108, "porcentaje_sprint": 18 }
+      }
+    }
+  }
+}

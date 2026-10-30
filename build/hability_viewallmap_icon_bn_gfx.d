@@ -1,0 +1,1 @@
+hability_viewallmap_icon_bn_gfx.o: hability_viewallmap_icon_bn_gfx.s

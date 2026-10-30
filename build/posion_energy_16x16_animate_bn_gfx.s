@@ -1,0 +1,44 @@
+
+@{{BLOCK(posion_energy_16x16_animate_bn_gfx)
+
+@=======================================================================
+@
+@	posion_energy_16x16_animate_bn_gfx, 16x48@4, 
+@	+ palette 16 entries, not compressed
+@	+ 12 tiles Metatiled by 2x2 not compressed
+@	Total size: 32 + 384 = 416
+@
+@	Time-stamp: 2026-10-25, 14:41:55
+@	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
+@	( http://www.coranac.com/projects/#grit )
+@
+@=======================================================================
+
+	.section .rodata
+	.align	2
+	.global posion_energy_16x16_animate_bn_gfxTiles		@ 384 unsigned chars
+	.hidden posion_energy_16x16_animate_bn_gfxTiles
+posion_energy_16x16_animate_bn_gfxTiles:
+	.word 0x00000000,0x00000000,0x00000000,0x00000000,0x50000000,0x51000000,0x01000000,0x00100000
+	.word 0x00000000,0x00000000,0x00000000,0x00000000,0x00000005,0x00000015,0x00000010,0x00000100
+	.word 0xDDD10000,0x88D10000,0xDDD10000,0xDD100000,0x11000000,0x00000000,0x00000000,0x00000000
+	.word 0x00001DDD,0x00001DDD,0x00001D8D,0x000001DD,0x00000011,0x00000000,0x00000000,0x00000000
+	.word 0x00000000,0x00000000,0x00000000,0x50000000,0x51000000,0x01000000,0x00100000,0xDDD10000
+	.word 0x00000000,0x00000000,0x00000000,0x00000005,0x00000015,0x00000010,0x00000100,0x00001DDD
+	.word 0xDDD10000,0xD8D10000,0xDD100000,0x11000000,0x00000000,0x00000000,0x00000000,0x00000000
+	.word 0x0000188D,0x00001DDD,0x000001DD,0x00000011,0x00000000,0x00000000,0x00000000,0x00000000
+
+	.word 0x00000000,0x00000000,0x00000000,0x00000000,0x50000000,0x51000000,0x01000000,0x00100000
+	.word 0x00000000,0x00000000,0x00000000,0x00000000,0x00000005,0x00000015,0x00000010,0x00000100
+	.word 0xDDD10000,0xDD810000,0x8DD10000,0xDD100000,0x11000000,0x00000000,0x00000000,0x00000000
+	.word 0x00001DDD,0x000018DD,0x00001DDD,0x000001DD,0x00000011,0x00000000,0x00000000,0x00000000
+
+	.section .rodata
+	.align	2
+	.global posion_energy_16x16_animate_bn_gfxPal		@ 32 unsigned chars
+	.hidden posion_energy_16x16_animate_bn_gfxPal
+posion_energy_16x16_animate_bn_gfxPal:
+	.hword 0x03E0,0x0C01,0x24C5,0x1863,0x1067,0x14AB,0x260B,0x368F
+	.hword 0x7FFF,0x4F5A,0x3EF9,0x14C7,0x2E7C,0x4A2E,0x0000,0x0421
+
+@}}BLOCK(posion_energy_16x16_animate_bn_gfx)

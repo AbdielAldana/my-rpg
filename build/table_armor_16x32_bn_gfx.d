@@ -1,0 +1,1 @@
+table_armor_16x32_bn_gfx.o: table_armor_16x32_bn_gfx.s

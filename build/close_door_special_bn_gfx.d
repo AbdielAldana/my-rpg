@@ -1,0 +1,1 @@
+close_door_special_bn_gfx.o: close_door_special_bn_gfx.s

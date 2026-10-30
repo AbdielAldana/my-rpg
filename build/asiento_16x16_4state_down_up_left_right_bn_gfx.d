@@ -1,0 +1,2 @@
+asiento_16x16_4state_down_up_left_right_bn_gfx.o: \
+ asiento_16x16_4state_down_up_left_right_bn_gfx.s

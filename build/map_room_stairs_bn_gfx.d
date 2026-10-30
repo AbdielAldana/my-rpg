@@ -1,0 +1,1 @@
+map_room_stairs_bn_gfx.o: map_room_stairs_bn_gfx.s

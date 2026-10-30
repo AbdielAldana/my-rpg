@@ -1,0 +1,1 @@
+hability_familiar_icon_bn_gfx.o: hability_familiar_icon_bn_gfx.s

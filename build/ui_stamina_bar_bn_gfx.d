@@ -1,0 +1,1 @@
+ui_stamina_bar_bn_gfx.o: ui_stamina_bar_bn_gfx.s

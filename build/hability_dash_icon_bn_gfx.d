@@ -1,0 +1,1 @@
+hability_dash_icon_bn_gfx.o: hability_dash_icon_bn_gfx.s

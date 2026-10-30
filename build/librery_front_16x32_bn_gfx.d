@@ -1,0 +1,1 @@
+librery_front_16x32_bn_gfx.o: librery_front_16x32_bn_gfx.s

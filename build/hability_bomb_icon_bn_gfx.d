@@ -1,0 +1,1 @@
+hability_bomb_icon_bn_gfx.o: hability_bomb_icon_bn_gfx.s

@@ -1,0 +1,1 @@
+ui_sastamina_bar_liquid_bn_gfx.o: ui_sastamina_bar_liquid_bn_gfx.s

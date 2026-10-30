@@ -1,0 +1,1 @@
+map_link_current_bn_gfx.o: map_link_current_bn_gfx.s
