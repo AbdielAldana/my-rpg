@@ -3,6 +3,7 @@ game_save.o: C:/GBA/butano/my-rpg/src/game_save.cpp \
  C:/GBA/butano/butano/include/bn_type_traits.h \
  C:/GBA/butano/butano/include/bn_common.h \
  C:/GBA/butano/butano/hw/include/bn_hw_common.h \
+ C:/GBA/butano/my-rpg/include/passive_shop.h \
  C:/GBA/butano/butano/include/bn_sram.h \
  C:/GBA/butano/butano/include/bn_assert.h \
  C:/GBA/butano/butano/include/bn_config_assert.h \
@@ -29,6 +30,7 @@ C:/GBA/butano/my-rpg/include/game_save.h:
 C:/GBA/butano/butano/include/bn_type_traits.h:
 C:/GBA/butano/butano/include/bn_common.h:
 C:/GBA/butano/butano/hw/include/bn_hw_common.h:
+C:/GBA/butano/my-rpg/include/passive_shop.h:
 C:/GBA/butano/butano/include/bn_sram.h:
 C:/GBA/butano/butano/include/bn_assert.h:
 C:/GBA/butano/butano/include/bn_config_assert.h:

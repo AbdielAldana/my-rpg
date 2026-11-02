@@ -1,0 +1,1 @@
+totem_de_repeticion_bn_gfx.o: totem_de_repeticion_bn_gfx.s

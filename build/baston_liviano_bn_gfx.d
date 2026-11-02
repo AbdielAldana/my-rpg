@@ -1,0 +1,1 @@
+baston_liviano_bn_gfx.o: baston_liviano_bn_gfx.s

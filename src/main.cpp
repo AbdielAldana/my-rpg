@@ -14,10 +14,18 @@
 #include "bn_bgs_mosaic.h"
 #include "bn_sprites_mosaic.h"
 #include "bn_sprite_affine_mat_ptr.h"
+#include "bn_sprite_double_size_mode.h"
 #include "bn_sprite_palette_ptr.h"
 #include "bn_sprite_text_generator.h"
 #include "bn_sprite_items_player.h"
+#include "bn_sprite_items_aventure_1.h"
+#include "bn_sprite_items_aventure_2.h"
+#include "bn_sprite_items_aventure_3.h"
+#include "bn_sprite_items_aventure_4.h"
 #include "bn_sprite_items_key.h"
+#include "bn_sprite_items_medikit.h"
+#include "bn_sprite_items_coin.h"
+#include "bn_sprite_items_coin_sack.h"
 #include "bn_sprite_items_posion_energy_16x16_animate.h"
 #include "bn_sprite_items_posion_sprint_16x16_animate.h"
 #include "bn_sprite_items_door.h"
@@ -41,7 +49,9 @@
 #include "bn_sprite_items_mushy.h"
 #include "bn_sprite_items_plant_enemy.h"
 #include "bn_sprite_items_bullet_enemy_plant.h"
+#include "bn_sprite_items_bullet_aventure_aliado.h"
 #include "bn_sprite_items_stairs.h"
+#include "bn_sprite_items_portal_16x16_animate.h"
 #include "bn_sprite_items_spikes_16x16_animate.h"
 #include "bn_sprite_items_campfire.h"
 #include "bn_sprite_items_label_16x16_animate.h"
@@ -67,6 +77,28 @@
 #include "bn_sprite_items_ui_stamina_bar.h"
 #include "bn_sprite_items_ui_energy_bar_liquid.h"
 #include "bn_sprite_items_ui_sastamina_bar_liquid.h"
+#include "bn_sprite_items_chispa_ligera.h"
+#include "bn_sprite_items_nucleo_denso.h"
+#include "bn_sprite_items_esencia_concentrada.h"
+#include "bn_sprite_items_cristal_de_cadencia.h"
+#include "bn_sprite_items_sello_de_abundancia.h"
+#include "bn_sprite_items_descarga_gemela.h"
+#include "bn_sprite_items_descarga_trina.h"
+#include "bn_sprite_items_corazon_arcano.h"
+#include "bn_sprite_items_viento_encantado.h"
+#include "bn_sprite_items_canalizador_rapido.h"
+#include "bn_sprite_items_orbe_mayor.h"
+#include "bn_sprite_items_orbe_menor.h"
+#include "bn_sprite_items_reserva_de_mana.h"
+#include "bn_sprite_items_totem_de_repeticion.h"
+#include "bn_sprite_items_baston_liviano.h"
+#include "bn_sprite_items_baston_pesado.h"
+#include "bn_sprite_items_fragmento_de_reapidez.h"
+#include "bn_sprite_items_fragmento_de_multiplicacion.h"
+#include "bn_sprite_items_sello_de_potencia.h"
+#include "bn_sprite_items_gran_nucleo_arcano.h"
+#include "bn_sprite_items_cruz_divina.h"
+#include "player_stats.h"
 #include "bn_sound_items.h"
 #include "common_variable_8x16_sprite_font.h"
 #include "game_regular_font.h"
@@ -149,6 +181,23 @@ void create_floor_label(int floor_number, char *label)
     {
         label[index++] = digits[--digit_count];
     }
+    label[index] = '\0';
+}
+
+void create_value_label(const char* prefix, unsigned value, char* label)
+{
+    int index = 0;
+    while(*prefix)
+        label[index++] = *prefix++;
+    char digits[10];
+    int digit_count = 0;
+    do
+    {
+        digits[digit_count++] = char('0' + value % 10);
+        value /= 10;
+    } while(value > 0 && digit_count < 10);
+    while(digit_count > 0)
+        label[index++] = digits[--digit_count];
     label[index] = '\0';
 }
 
@@ -246,7 +295,7 @@ int main()
     bn::optional<bn::regular_bg_ptr> map_bg;
     bn::optional<bn::regular_bg_ptr> room_special_bg;
     bn::optional<bn::regular_bg_ptr> reward_room_bg;
-    static RoomManager room_manager;
+    BN_DATA_EWRAM static RoomManager room_manager;
     game_save::load();
     unsigned startup_ticks = unsigned(bn::core::current_cpu_ticks());
     // La semilla propuesta para una partida nueva vive solo en RAM.
@@ -261,6 +310,7 @@ int main()
     bn::seed_random reward_lever_random;
     unsigned selected_seed = random_seed;
     unsigned run_seed = selected_seed;
+    bool has_started_run = false;
     bn::seed_random seed_picker(random_seed ^ 0x6D2B79F5u);
     auto select_new_seed = [&]()
     {
@@ -304,6 +354,16 @@ int main()
     auto current_imported_room = [&]() -> const imported_room::Room&
     {
         return imported_room_for(room_manager.current_room_id());
+    };
+    auto is_menu_demo_room = [&]()
+    {
+        return room_manager.is_menu_floor() && imported_room::contains(room_manager.current_template()) &&
+            imported_room::get(room_manager.current_template()).menu_demo_room;
+    };
+    auto is_menu_shop_room = [&]()
+    {
+        return room_manager.is_menu_floor() && imported_room::contains(room_manager.current_template()) &&
+            imported_room::get(room_manager.current_template()).menu_shop_room;
     };
     auto composition_room_for = [&](int room_id) -> const composition_rooms::Room*
     {
@@ -444,12 +504,25 @@ int main()
         int room_id = -1;
         int x = 0;
         int y = 0;
+        int sprite_variant = 0;
     };
     constexpr int max_npcs = 4;
     static NpcState npcs[max_npcs];
     BN_DATA_EWRAM_BSS static int npc_sprite_x[max_npcs] = {};
     BN_DATA_EWRAM_BSS static int npc_sprite_y[max_npcs] = {};
     int carried_npc_index = -1;
+    bool medikit_pickup_animation_active = false;
+    int medikit_pickup_animation_timer = 0;
+    int medikit_pickup_npc_index = -1;
+    bool world_pickup_animation_active = false;
+    bool ability_pickup_animation_active = false;
+    int ability_pickup_animation_timer = 0;
+    int ability_pickup_animation_x = 0;
+    int ability_pickup_animation_y = 0;
+    ActiveAbility ability_pickup_animation_ability = ActiveAbility::DASH;
+    int ability_pickup_animation_level = 1;
+    bool ability_pickup_requires_replacement = false;
+    bn::optional<bn::sprite_ptr> ability_pickup_animation_sprite;
     int rescued_adventurers = 0;
     constexpr int follow_history_capacity = 64;
     constexpr int follow_delay = 16;
@@ -472,9 +545,10 @@ int main()
     int menu_chest_animation_timer = 0;
     bn::vector<bn::sprite_ptr, imported_room::max_decoration_count> imported_object_sprites;
     bn::vector<bn::sprite_ptr, 4> imported_item_sprites;
-    bn::vector<bn::sprite_ptr, 4> imported_ability_sprites;
+    bn::vector<bn::sprite_ptr, 8> imported_ability_sprites;
     bn::vector<bn::sprite_ptr, 1> imported_campfire_sprites;
     bn::vector<bn::sprite_ptr, 1> imported_stairs_sprites;
+    bn::vector<bn::sprite_ptr, 1> imported_portal_sprites;
     bn::vector<bn::sprite_ptr, composition_rooms::max_decoration_count> composition_object_sprites;
     int imported_chest_sprite_index = -1;
     int imported_chest_frame = 0;
@@ -545,6 +619,17 @@ int main()
     constexpr int mushy_max_speed_percent = 375;
     constexpr int max_plants = 4;
     constexpr int max_plant_bullets = 16;
+    constexpr int max_adventure_bullets = 32;
+    struct AdventureBulletStats
+    {
+        bn::fixed speed = bn::fixed(1.4);
+        bn::fixed size = 1;
+        int damage = 1;
+        int shot_interval_frames = 180;
+        int projectile_count = 1;
+        int reserve = 16;
+        passive_shop::ProjectilePattern pattern = passive_shop::ProjectilePattern::SINGLE;
+    } adventure_bullet_stats;
     constexpr int plant_shot_interval_frames = 180;
     constexpr const auto& plant_positions = composition_rooms::plant_positions;
     auto plant_coordinate = [&](int room_id, int position_index, int axis) -> int
@@ -567,7 +652,44 @@ int main()
         bn::fixed velocity_x = 0;
         bn::fixed velocity_y = 0;
     };
-    PlantBulletState plant_bullets[max_plant_bullets];
+    BN_DATA_EWRAM_BSS static PlantBulletState plant_bullets[max_plant_bullets];
+    BN_DATA_EWRAM_BSS static PlantBulletState adventure_bullets[max_adventure_bullets];
+    int adventure_shot_cooldowns[max_npcs] = {};
+    bn::vector<bn::sprite_ptr, max_adventure_bullets> adventure_bullet_sprites;
+    bn::sprite_affine_mat_ptr adventure_bullet_affine = bn::sprite_affine_mat_ptr::create();
+    int adventure_bullet_room_id = -1;
+    for(int index = 0; index < max_adventure_bullets; ++index)
+    {
+        adventure_bullet_sprites.push_back(
+            bn::sprite_items::bullet_aventure_aliado.create_sprite(0, 0));
+        adventure_bullet_sprites[index].set_bg_priority(1);
+        adventure_bullet_sprites[index].set_z_order(-3);
+        adventure_bullet_sprites[index].set_affine_mat(adventure_bullet_affine);
+        // El proyectil base es de 8x8. Reserva el area de 16x16 para que los
+        // modificadores de tamano puedan dibujarlo completo en hardware GBA.
+        adventure_bullet_sprites[index].set_double_size_mode(
+            bn::sprite_double_size_mode::ENABLED);
+        adventure_bullet_sprites[index].set_visible(false);
+    }
+    auto apply_adventure_passive_stats = [&]()
+    {
+        passive_shop::BulletStats stats = passive_shop::calculate_bullet_stats(
+            game_save::records().shop.purchased_mask);
+        adventure_bullet_stats.speed = bn::fixed(stats.speed_milli) / 1000;
+        adventure_bullet_stats.size = bn::fixed(stats.size_milli) / 1000;
+        adventure_bullet_stats.damage = 1;
+        adventure_bullet_stats.shot_interval_frames = stats.shot_interval_frames;
+        adventure_bullet_stats.projectile_count = stats.projectile_count;
+        adventure_bullet_stats.reserve = stats.reserve;
+        adventure_bullet_stats.pattern = stats.pattern;
+        // Un sprite de 8x8 puede crecer hasta 2x dentro de su area doble sin
+        // recortarse. La colision conserva el tamano completo calculado.
+        bn::fixed visual_size = adventure_bullet_stats.size;
+        if(visual_size > 2)
+            visual_size = 2;
+        adventure_bullet_affine.set_scale(visual_size);
+    };
+    apply_adventure_passive_stats();
     BN_DATA_EWRAM_BSS static int plant_shot_cooldowns[RoomManager::max_rooms][max_plants] = {};
     BN_DATA_EWRAM_BSS static int plant_counts[RoomManager::max_rooms] = {};
     BN_DATA_EWRAM_BSS static int plant_position_indices[RoomManager::max_rooms][max_plants] = {};
@@ -576,6 +698,27 @@ int main()
     BN_DATA_EWRAM_BSS static int plant_fire_animation_steps[max_plants] = {};
     BN_DATA_EWRAM_BSS static int plant_fire_animation_timers[max_plants] = {};
     static int plant_displayed_frames[max_plants] = {-1, -1, -1, -1};
+    constexpr int max_enemy_death_animations =
+        max_skeletons + max_bats + max_mushies + max_plants;
+    struct EnemyDeathAnimationState
+    {
+        bool active = false;
+        int kind = 0;
+        int x = 0;
+        int y = 0;
+        int timer = 0;
+    };
+    BN_DATA_EWRAM_BSS static EnemyDeathAnimationState
+        enemy_death_animations[max_enemy_death_animations] = {};
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, max_enemy_death_animations>
+        enemy_death_sprites;
+    for(int index = 0; index < max_enemy_death_animations; ++index)
+    {
+        enemy_death_sprites.push_back(bn::sprite_items::skeleton.create_sprite(0, 0));
+        enemy_death_sprites[index].set_bg_priority(1);
+        enemy_death_sprites[index].set_z_order(-3);
+        enemy_death_sprites[index].set_visible(false);
+    }
 
     // Solo existen los sprites de las puertas conectadas al cuarto actual.
     bn::vector<bn::sprite_ptr, 4> room_door_sprites;
@@ -588,6 +731,13 @@ int main()
     constexpr int inventory_rescued_x = -80;
     constexpr int inventory_rescued_y = -8;
     constexpr int inventory_rescued_count_x = -64;
+    // Medikit: columna 5. Coin: columna 7, ambos a la altura de la llave.
+    constexpr int inventory_medikit_x = -32;
+    constexpr int inventory_medikit_y = inventory_key_y;
+    constexpr int inventory_medikit_count_x = -16;
+    constexpr int inventory_coin_x = 10;
+    constexpr int inventory_coin_y = inventory_key_y;
+    constexpr int inventory_coin_count_x = 26;
     bn::sprite_palette_ptr inventory_key_palette =
         bn::sprite_palette_ptr::create_new(bn::sprite_items::key.palette_item());
     bn::sprite_palette_ptr inventory_player_palette =
@@ -599,6 +749,17 @@ int main()
     key_icon->set_bg_priority(0);
     key_icon->set_z_order(-13);
     key_icon->set_visible(false);
+    bn::optional<bn::sprite_ptr> medikit_icon;
+    medikit_icon.emplace(bn::sprite_items::medikit.create_sprite(
+        inventory_medikit_x, inventory_medikit_y));
+    medikit_icon->set_bg_priority(0);
+    medikit_icon->set_z_order(-13);
+    medikit_icon->set_visible(false);
+    bn::optional<bn::sprite_ptr> coin_icon;
+    coin_icon.emplace(bn::sprite_items::coin.create_sprite(inventory_coin_x, inventory_coin_y));
+    coin_icon->set_bg_priority(0);
+    coin_icon->set_z_order(-13);
+    coin_icon->set_visible(false);
     bn::sprite_ptr inventory_rescued_icon =
         bn::sprite_items::player.create_sprite(inventory_rescued_x, inventory_rescued_y, 0);
     inventory_rescued_icon.set_palette(inventory_player_palette);
@@ -615,6 +776,11 @@ int main()
     bn::sprite_ptr sprint_potion_sprite =
         bn::sprite_items::posion_sprint_16x16_animate.create_sprite(0, 0);
     sprint_potion_sprite.set_visible(false);
+    bn::sprite_ptr medikit_sprite = bn::sprite_items::medikit.create_sprite(0, 0);
+    medikit_sprite.set_visible(false);
+    bn::optional<bn::sprite_ptr> medikit_use_sprite;
+    bn::sprite_ptr coin_sprite = bn::sprite_items::coin.create_sprite(0, 0);
+    coin_sprite.set_visible(false);
     struct FloorPotionState
     {
         bool active = false;
@@ -623,7 +789,38 @@ int main()
         int x = 0;
         int y = 0;
     };
-    FloorPotionState floor_potions[RoomManager::max_rooms] = {};
+    BN_DATA_EWRAM static FloorPotionState floor_potions[RoomManager::max_rooms] = {};
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, RoomManager::max_items_per_room>
+        coin_drop_sprites;
+    auto refresh_room_coin_drop_sprites = [&]()
+    {
+        coin_drop_sprites.clear();
+        int room_id = room_manager.current_room_id();
+        for(int index = 0; index < RoomManager::max_items_per_room; ++index)
+        {
+            const RoomItem* item = room_manager.item_at(room_id, index);
+            if(!item || (item->type != RoomItemType::COIN &&
+                         item->type != RoomItemType::COIN_SACK))
+                continue;
+            if(item->type == RoomItemType::COIN_SACK)
+                coin_drop_sprites.push_back(bn::sprite_items::coin_sack.create_sprite(item->x, item->y));
+            else
+                coin_drop_sprites.push_back(bn::sprite_items::coin.create_sprite(item->x, item->y));
+            coin_drop_sprites.back().set_bg_priority(1);
+            coin_drop_sprites.back().set_z_order(-2);
+        }
+    };
+    auto try_drop_enemy_loot = [&](int room_id, int enemy_x, int enemy_y)
+    {
+        bool dropped = false;
+        if(floor_random.get_int(100) < 45)
+            dropped = room_manager.add_item(room_id, RoomItemType::COIN, enemy_x, enemy_y);
+        if(floor_random.get_int(100) < 15)
+            dropped = room_manager.add_item(room_id, RoomItemType::COIN_SACK,
+                                             enemy_x, enemy_y) || dropped;
+        if(dropped && room_manager.current_room_id() == room_id)
+            refresh_room_coin_drop_sprites();
+    };
     struct RewardRoomReward
     {
         bool active = false;
@@ -640,6 +837,12 @@ int main()
     int potion_animation_timer = 0;
     int potion_animation_frame = 0;
     bn::sprite_ptr stairs = bn::sprite_items::stairs.create_sprite(0, 0);
+    bn::optional<bn::sprite_ptr> world_portal_sprite;
+    int world_portal_x = 0;
+    int world_portal_y = 0;
+    int world_portal_room_id = -1;
+    int portal_animation_timer = 0;
+    int portal_animation_frame = 0;
     stairs.set_bg_priority(1);
     stairs.set_position(0, -8);
     stairs.set_visible(false);
@@ -648,12 +851,24 @@ int main()
     // Punto compartido Q/& definido en el JSON de la fogata.
     constexpr int campfire_reward_x = composition_rooms::campfire_reward_position.x;
     constexpr int campfire_reward_y = composition_rooms::campfire_reward_position.y;
+    constexpr int max_campfire_rewards = 3;
+    struct CampfireRewardState
+    {
+        bool active = false;
+        RoomItemType type = RoomItemType::KEY;
+        int level = 1;
+        int x = campfire_reward_x;
+        int y = campfire_reward_y;
+    };
+    CampfireRewardState campfire_rewards[max_campfire_rewards];
+    bn::optional<bn::sprite_ptr> campfire_reward_sprites[max_campfire_rewards];
+    int campfire_reward_replacement_slot = -1;
+    // Campos conservados para migrar partidas guardadas de la versión anterior.
     bool campfire_reward_active = false;
     bool campfire_skill_reward_granted = false;
     int campfire_pending_rewards = 0;
     RoomItemType campfire_reward_type = RoomItemType::KEY;
     int campfire_reward_level = 1;
-    bn::optional<bn::sprite_ptr> campfire_reward_sprite;
     bn::optional<bn::sprite_ptr> placed_bomb_sprite;
     constexpr const auto& delivered_npc_offsets = composition_rooms::delivered_npc_offsets;
     constexpr int delivered_npc_animation_interval = 180;
@@ -749,6 +964,7 @@ int main()
     bool ui_abierta = false;
     bool inventory_open = false;
     bool ability_data_open = false;
+    bool ability_data_return_to_world = false;
     bool options_open = false;
     bool game_started = false;
     constexpr int ability_icon_blink_interval_frames = 5;
@@ -797,6 +1013,24 @@ int main()
         default: break;
         }
     };
+    auto start_ability_pickup_animation = [&](ActiveAbility ability, int level, int pickup_x,
+                                              int pickup_y, bool requires_replacement)
+    {
+        world_pickup_animation_active = true;
+        ability_pickup_animation_active = true;
+        ability_pickup_animation_timer = 0;
+        ability_pickup_animation_x = pickup_x;
+        ability_pickup_animation_y = pickup_y;
+        ability_pickup_animation_ability = ability;
+        ability_pickup_animation_level = level;
+        ability_pickup_requires_replacement = requires_replacement;
+        bn::sound_items::pickup_item.play();
+        ability_pickup_animation_sprite.emplace(
+            bn::sprite_items::hability_dash_icon.create_sprite(pickup_x, pickup_y));
+        set_ability_icon(*ability_pickup_animation_sprite, ability);
+        ability_pickup_animation_sprite->set_bg_priority(1);
+        ability_pickup_animation_sprite->set_z_order(-4);
+    };
     auto find_carried_ability = [&](ActiveAbility ability)
     {
         for (int index = 0; index < carried_ability_count; ++index)
@@ -813,17 +1047,17 @@ int main()
         int active_slot = find_carried_ability(active_ability);
         return active_slot >= 0 ? carried_abilities[active_slot].level : 1;
     };
-    auto sprint_cost_for_level = [&](ActiveAbility ability, int level)
+    auto spirit_cost_for_level = [&](ActiveAbility ability, int level)
     {
         int base_cost = 0;
         switch (ability)
         {
-        case ActiveAbility::DASH: base_cost = 180; break;
-        case ActiveAbility::STOP_TIME: base_cost = 200; break;
-        case ActiveAbility::TRAPDOOR_BACK: base_cost = 240; break;
-        case ActiveAbility::VIEW_ALL_MAP: base_cost = 400; break;
-        case ActiveAbility::MASTER_KEY: base_cost = 300; break;
-        case ActiveAbility::FAMILIAR: base_cost = 180; break;
+        case ActiveAbility::DASH: base_cost = 6; break;
+        case ActiveAbility::STOP_TIME: base_cost = 7; break;
+        case ActiveAbility::TRAPDOOR_BACK: base_cost = 8; break;
+        case ActiveAbility::VIEW_ALL_MAP: base_cost = 13; break;
+        case ActiveAbility::MASTER_KEY: base_cost = 10; break;
+        case ActiveAbility::FAMILIAR: base_cost = 6; break;
         case ActiveAbility::BOMB: break;
         default: break;
         }
@@ -871,6 +1105,7 @@ int main()
         sprite.set_visible(false);
     }
     int key_count = 0;
+    int medikit_count = 0;
     bool hud_sprites_allocated = true;
     char key_count_label[12] = "x0";
     bn::vector<bn::sprite_ptr, 16> rescued_count_text_sprites;
@@ -878,7 +1113,7 @@ int main()
     rescued_count_text_generator.set_left_alignment();
     rescued_count_text_generator.set_bg_priority(0);
     rescued_count_text_generator.set_z_order(-13);
-    char rescued_count_label[12] = "x0";
+    char rescued_count_label[20] = "x0 saved";
     rescued_count_text_generator.generate(inventory_rescued_count_x, inventory_rescued_y,
                                           rescued_count_label, rescued_count_text_sprites);
     for (bn::sprite_ptr &sprite : rescued_count_text_sprites)
@@ -902,7 +1137,13 @@ int main()
         {
             rescued_count_label[index++] = digits[--digit_count];
         }
-        rescued_count_label[index] = '\0';
+        constexpr char saved_suffix[] = " saved";
+        for(char character : saved_suffix)
+        {
+            rescued_count_label[index++] = character;
+            if(character == '\0')
+                break;
+        }
 
         rescued_count_text_sprites.clear();
         rescued_count_text_generator.generate(inventory_rescued_count_x, inventory_rescued_y,
@@ -943,6 +1184,49 @@ int main()
             sprite.set_visible(hud_visible);
         }
     };
+    bn::vector<bn::sprite_ptr, 16> medikit_count_text_sprites;
+    bn::vector<bn::sprite_ptr, 16> coin_count_text_sprites;
+    bn::sprite_text_generator item_count_text_generator(common::variable_8x16_sprite_font);
+    item_count_text_generator.set_left_alignment();
+    item_count_text_generator.set_bg_priority(0);
+    item_count_text_generator.set_z_order(-13);
+    char medikit_count_label[12] = "x0";
+    char coin_count_label[12] = "x0";
+    auto update_item_count_label = [&](int value, int text_x, int text_y, char* label,
+                                       bn::vector<bn::sprite_ptr, 16>& sprites)
+    {
+        char digits[10];
+        int digit_count = 0;
+        do
+        {
+            digits[digit_count++] = char('0' + value % 10);
+            value /= 10;
+        } while(value > 0 && digit_count < 10);
+        int index = 0;
+        label[index++] = 'x';
+        while(digit_count > 0)
+            label[index++] = digits[--digit_count];
+        label[index] = '\0';
+        if(!hud_sprites_allocated)
+            return;
+        sprites.clear();
+        item_count_text_generator.generate(text_x, text_y, label, sprites);
+        bool visible = game_started && inventory_open && !options_open;
+        for(bn::sprite_ptr& sprite : sprites)
+            sprite.set_visible(visible);
+    };
+    auto update_medikit_count_label = [&]()
+    {
+        update_item_count_label(medikit_count, inventory_medikit_count_x, inventory_medikit_y,
+                                medikit_count_label, medikit_count_text_sprites);
+    };
+    auto update_coin_count_label = [&]()
+    {
+        update_item_count_label(game_save::records().coins, inventory_coin_count_x, inventory_coin_y,
+                                coin_count_label, coin_count_text_sprites);
+    };
+    update_medikit_count_label();
+    update_coin_count_label();
 
     int piso_actual = 1;
     bn::sprite_text_generator floor_text_generator(common::variable_8x16_sprite_font);
@@ -993,16 +1277,20 @@ int main()
     };
     refresh_map_labels_visibility();
 
-    constexpr int energy_capacity = 20;
+    PlayerStats player_stats;
+    constexpr int energy_capacity = PlayerStats::max_energy;
     constexpr int starting_energy = 15;
-    int energy = starting_energy;
+    int& energy = player_stats.energy;
+    player_stats.energy = starting_energy;
     constexpr int stamina_capacity_frames = 600;
+    constexpr int spirit_frames_per_point = stamina_capacity_frames / PlayerStats::max_spirit;
     constexpr int campfire_use_duration_frames = 90;
     constexpr int ability_flash_duration_frames = 8;
     constexpr int stamina_blink_interval_frames = 6;
     constexpr int stamina_blink_times = 3;
     constexpr int energy_blink_interval_frames = 6;
     int stamina = stamina_capacity_frames;
+    int spirit_frame_remainder = 0;
     int campfire_use_frames_remaining = 0;
     int ability_flash_frames_remaining = 0;
     auto start_ability_flash = [&]()
@@ -1081,6 +1369,10 @@ int main()
         {
             sprite.set_visible(visible);
         }
+        if(medikit_icon.has_value()) medikit_icon->set_visible(visible);
+        if(coin_icon.has_value()) coin_icon->set_visible(visible);
+        for(bn::sprite_ptr& sprite : medikit_count_text_sprites) sprite.set_visible(visible);
+        for(bn::sprite_ptr& sprite : coin_count_text_sprites) sprite.set_visible(visible);
         inventory_rescued_icon.set_visible(visible);
         for (bn::sprite_ptr &sprite : rescued_count_text_sprites)
         {
@@ -1179,6 +1471,13 @@ int main()
     };
     auto update_stamina_bar_fill = [&](int stamina_value)
     {
+        // El gameplay conserva su resolución por frame (600 unidades), pero
+        // el stat público de Spirit se mantiene en una escala de 0..20.
+        player_stats.spirit = stamina_value * PlayerStats::max_spirit /
+            stamina_capacity_frames;
+        if(player_stats.spirit < 0) player_stats.spirit = 0;
+        if(player_stats.spirit > PlayerStats::max_spirit)
+            player_stats.spirit = PlayerStats::max_spirit;
         update_bar_fill(bn::sprite_items::ui_sastamina_bar_liquid,
                         stamina_bar_liquid_sprites, stamina_liquid_segment_visible,
                         partial_liquid_tiles, partial_liquid_vram,
@@ -1192,6 +1491,16 @@ int main()
                         partial_energy_liquid_tiles, partial_energy_liquid_vram,
                         energy_value, energy_capacity);
         refresh_energy_bar_visibility();
+    };
+    auto set_spirit = [&](int spirit_value)
+    {
+        if(spirit_value < 0) spirit_value = 0;
+        if(spirit_value > PlayerStats::max_spirit)
+            spirit_value = PlayerStats::max_spirit;
+        player_stats.spirit = spirit_value;
+        stamina = player_stats.spirit * spirit_frames_per_point;
+        spirit_frame_remainder = 0;
+        update_stamina_bar_fill(stamina);
     };
     auto start_stamina_rejection_flash = [&]()
     {
@@ -1260,15 +1569,26 @@ int main()
     // La pantalla de inventario usa la reticula de tiles de 16x16:
     // fila 1 para el titulo, fila 2 para llaves, fila 4 para rescatados,
     // fila 6 para el encabezado de habilidades y filas 7-8 para los iconos.
-    bn::vector<bn::sprite_ptr, 16> inventory_title_sprites;
-    bn::vector<bn::sprite_ptr, 16> inventory_abilities_heading_sprites;
-    bn::vector<bn::sprite_ptr, 4> inventory_ability_frames;
-    bn::vector<bn::sprite_ptr, 4> inventory_ability_icons;
-    bn::vector<bn::sprite_ptr, 4> inventory_ability_level_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 16> inventory_title_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 16> inventory_abilities_heading_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 4> inventory_ability_frames;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 4> inventory_ability_icons;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 4> inventory_ability_level_sprites;
+    bn::optional<bn::sprite_ptr> inventory_portal_frame;
+    bn::optional<bn::sprite_ptr> inventory_portal_icon;
+    bool inventory_portal_selected = false;
+    int inventory_selected_ability_slot = 0;
+    int inventory_active_blink_wait_frames = 60;
+    int inventory_active_blink_timer = 0;
+    int inventory_active_blink_toggles = 0;
+    bool inventory_active_blink_hidden = false;
     bn::optional<bn::sprite_ptr> ability_data_icon;
-    bn::vector<bn::sprite_ptr, 128> ability_data_text_sprites;
+    // Estos buffers viven toda la partida. EWRAM deja margen de pila para
+    // generar texto y cambiar de pantalla sin sobrescribir el estado del juego.
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 128> ability_data_text_sprites;
+    constexpr int inventory_portal_position[2] = {-80, 48};
     constexpr int inventory_ability_positions[4][2] =
-        {{-72, 48}, {-24, 48}, {24, 48}, {72, 48}};
+        {{-40, 48}, {0, 48}, {40, 48}, {80, 48}};
     bn::sprite_text_generator inventory_text_generator(common::variable_8x16_sprite_font);
     inventory_text_generator.set_center_alignment();
     inventory_text_generator.set_bg_priority(0);
@@ -1296,11 +1616,11 @@ int main()
     };
     auto update_inventory_ability_selection = [&]()
     {
-        int selected_index = selected_ability_slot;
+        int selected_index = inventory_selected_ability_slot;
         for (int index = 0; index < inventory_ability_frames.size(); ++index)
         {
             bn::sprite_ptr &frame_sprite = inventory_ability_frames[index];
-            if (index == selected_index)
+            if (!inventory_portal_selected && index == selected_index)
             {
                 frame_sprite.set_tiles(bn::sprite_items::ui_hability_selected.tiles_item());
                 frame_sprite.set_palette(bn::sprite_items::ui_hability_selected.palette_item());
@@ -1310,6 +1630,13 @@ int main()
                 frame_sprite.set_tiles(bn::sprite_items::ui_hability.tiles_item());
                 frame_sprite.set_palette(bn::sprite_items::ui_hability.palette_item());
             }
+        }
+        if(inventory_portal_frame.has_value())
+        {
+            inventory_portal_frame->set_tiles(inventory_portal_selected ?
+                bn::sprite_items::ui_hability_selected.tiles_item() : bn::sprite_items::ui_hability.tiles_item());
+            inventory_portal_frame->set_palette(inventory_portal_selected ?
+                bn::sprite_items::ui_hability_selected.palette_item() : bn::sprite_items::ui_hability.palette_item());
         }
     };
     auto clear_inventory_screen = [&]()
@@ -1322,6 +1649,11 @@ int main()
         for (bn::sprite_ptr &sprite : inventory_ability_frames) sprite.set_visible(false);
         for (bn::sprite_ptr &sprite : inventory_ability_icons) sprite.set_visible(false);
         for (bn::sprite_ptr &sprite : inventory_ability_level_sprites) sprite.set_visible(false);
+        if(inventory_portal_frame.has_value()) inventory_portal_frame->set_visible(false);
+        if(inventory_portal_icon.has_value()) inventory_portal_icon->set_visible(false);
+        inventory_portal_frame.reset();
+        inventory_portal_icon.reset();
+        inventory_portal_selected = false;
         inventory_bg.reset();
         map_bg.reset();
         inventory_title_sprites.clear();
@@ -1338,9 +1670,22 @@ int main()
         inventory_bg->set_priority(0);
         inventory_text_generator.generate(0, -56, "INVENTORY", inventory_title_sprites);
         inventory_text_generator.generate(0, 24, "HABILIDADES", inventory_abilities_heading_sprites);
+        if(!is_menu_demo_room() && !replacing_ability)
+        {
+            inventory_portal_frame.emplace(bn::sprite_items::ui_hability.create_sprite(
+                inventory_portal_position[0], inventory_portal_position[1]));
+            inventory_portal_frame->set_bg_priority(0);
+            inventory_portal_frame->set_z_order(-16);
+            inventory_portal_icon.emplace(bn::sprite_items::portal_16x16_animate.create_sprite(
+                inventory_portal_position[0], inventory_portal_position[1]));
+            inventory_portal_icon->set_bg_priority(0);
+            inventory_portal_icon->set_z_order(-17);
+            inventory_portal_selected = carried_ability_count == 0;
+        }
+        inventory_selected_ability_slot = selected_ability_slot;
 
         constexpr int inventory_frame_z = -16;
-        for (int index = 0; index < carried_ability_count; ++index)
+        for (int index = 0; index < 4; ++index)
         {
             inventory_ability_frames.push_back(
                 bn::sprite_items::ui_hability.create_sprite(
@@ -1370,6 +1715,10 @@ int main()
         update_overlay_title("", false);
         update_key_count_label();
         update_rescued_count_label();
+        inventory_active_blink_wait_frames = 60;
+        inventory_active_blink_timer = 0;
+        inventory_active_blink_toggles = 0;
+        inventory_active_blink_hidden = false;
     };
     auto clear_ability_data_screen = [&]()
     {
@@ -1378,8 +1727,40 @@ int main()
         ability_data_text_sprites.clear();
         ability_data_open = false;
     };
+    auto update_inventory_active_ability_blink = [&]()
+    {
+        if(replacing_ability || selected_ability_slot < 0 ||
+           selected_ability_slot >= inventory_ability_icons.size())
+            return;
+        if(inventory_active_blink_toggles == 0)
+        {
+            if(inventory_active_blink_wait_frames > 0)
+                --inventory_active_blink_wait_frames;
+            if(inventory_active_blink_wait_frames == 0)
+            {
+                inventory_active_blink_toggles = 6;
+                inventory_active_blink_hidden = false;
+                inventory_active_blink_timer = 0;
+            }
+        }
+        else if(++inventory_active_blink_timer >= 4)
+        {
+            inventory_active_blink_timer = 0;
+            inventory_active_blink_hidden = !inventory_active_blink_hidden;
+            --inventory_active_blink_toggles;
+            if(inventory_active_blink_toggles == 0)
+            {
+                inventory_active_blink_hidden = false;
+                inventory_active_blink_wait_frames = 60;
+            }
+        }
+        inventory_ability_icons[selected_ability_slot].set_visible(!inventory_active_blink_hidden);
+        inventory_ability_level_sprites[selected_ability_slot].set_visible(!inventory_active_blink_hidden);
+    };
     auto create_ability_data_screen = [&]()
     {
+        int data_slot = inventory_open ? inventory_selected_ability_slot : selected_ability_slot;
+        inventory_selected_ability_slot = data_slot;
         clear_inventory_screen();
         inventory_open = false;
         ability_data_bg.emplace(bn::regular_bg_items::habilidad_data.create_bg(0, 0));
@@ -1387,8 +1768,8 @@ int main()
         ability_data_open = true;
         refresh_main_hud_visibility();
 
-        ActiveAbility ability = carried_abilities[selected_ability_slot].ability;
-        int level = carried_abilities[selected_ability_slot].level;
+        ActiveAbility ability = carried_abilities[data_slot].ability;
+        int level = carried_abilities[data_slot].level;
         constexpr const char *ability_names[7] =
             {"DASH", "DETENER TIEMPO", "TRAMPILLA", "REVELAR MAPA",
              "MASTER KEY", "BOMBA", "FAMILIAR"};
@@ -1441,40 +1822,103 @@ int main()
     auto open_ability_replacement = [&]()
     {
         replacing_ability = true;
-        selected_ability_slot = 0;
-        active_ability = carried_abilities[selected_ability_slot].ability;
-        update_active_ability_icon();
         inventory_open = true;
         pantalla_actual = Pantalla::INVENTARIO;
         ui_abierta = false;
         create_inventory_screen();
-        start_ability_icon_blink();
         refresh_main_hud_visibility();
+    };
+    auto finish_ability_pickup_animation = [&]()
+    {
+        ability_pickup_animation_active = false;
+        world_pickup_animation_active = false;
+        ability_pickup_animation_timer = 0;
+        ability_pickup_animation_sprite.reset();
+        if(ability_pickup_requires_replacement)
+        {
+            ability_pickup_requires_replacement = false;
+            open_ability_replacement();
+            return;
+        }
+
+        int existing_slot = find_carried_ability(ability_pickup_animation_ability);
+        if(existing_slot >= 0)
+        {
+            carried_abilities[existing_slot].level += ability_pickup_animation_level;
+            if(carried_abilities[existing_slot].level > 5)
+                carried_abilities[existing_slot].level = 5;
+            selected_ability_slot = existing_slot;
+        }
+        else
+        {
+            carried_abilities[carried_ability_count] =
+                {ability_pickup_animation_ability, ability_pickup_animation_level};
+            selected_ability_slot = carried_ability_count++;
+        }
+        active_ability = carried_abilities[selected_ability_slot].ability;
+        update_active_ability_icon();
+        inventory_selected_ability_slot = selected_ability_slot;
+        pantalla_actual = Pantalla::INVENTARIO;
+        ability_data_return_to_world = true;
+        create_ability_data_screen();
+    };
+    auto update_ability_pickup_animation = [&]()
+    {
+        if(!ability_pickup_animation_active || !ability_pickup_animation_sprite.has_value())
+            return;
+        constexpr int animation_duration = 40;
+        constexpr int blink_interval = 4;
+        int rise = ability_pickup_animation_timer / blink_interval;
+        if(rise > 8)
+            rise = 8;
+        ability_pickup_animation_sprite->set_position(
+            ability_pickup_animation_x, ability_pickup_animation_y - rise);
+        ability_pickup_animation_sprite->set_visible(
+            (ability_pickup_animation_timer / blink_interval) % 2 == 0);
+        ++ability_pickup_animation_timer;
+        if(ability_pickup_animation_timer >= animation_duration)
+            finish_ability_pickup_animation();
     };
 
     bn::sprite_text_generator title_text_generator(common::variable_8x16_sprite_font);
     title_text_generator.set_center_alignment();
     title_text_generator.set_bg_priority(0);
-    bn::vector<bn::sprite_ptr, 20> title_name_sprites;
-    bn::vector<bn::sprite_ptr, 20> title_credit_sprites;
-    bn::vector<bn::sprite_ptr, 16> title_seed_sprites;
-    bn::vector<bn::sprite_ptr, 20> title_edit_seed_sprites;
-    bn::vector<bn::sprite_ptr, 24> title_enter_sprites;
-    bn::vector<bn::sprite_ptr, 16> seed_editor_heading_sprites;
-    bn::vector<bn::sprite_ptr, 12> seed_editor_static_digits_sprites;
-    bn::vector<bn::sprite_ptr, 2> seed_editor_selected_digit_sprites;
-    bn::vector<bn::sprite_ptr, 24> seed_editor_move_help_sprites;
-    bn::vector<bn::sprite_ptr, 24> seed_editor_change_help_sprites;
-    bn::vector<bn::sprite_ptr, 20> seed_editor_accept_help_sprites;
-    bn::vector<bn::sprite_ptr, 20> seed_editor_range_sprites;
-    bn::vector<bn::sprite_ptr, 24> seed_editor_random_help_sprites;
-    bn::vector<bn::sprite_ptr, 12> options_heading_sprites;
-    bn::vector<bn::sprite_ptr, 12> options_continue_sprites;
-    bn::vector<bn::sprite_ptr, 20> options_reset_sprites;
-    bn::vector<bn::sprite_ptr, 16> options_title_sprites;
-    bn::vector<bn::sprite_ptr, 2> options_cursor_sprites;
-    bn::vector<bn::sprite_ptr, 40> game_over_text_sprites;
-    bn::vector<bn::sprite_ptr, 16> floor_transition_text_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 20> title_name_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 20> title_credit_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 16> title_seed_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 20> title_edit_seed_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> title_enter_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 16> seed_editor_heading_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 12> seed_editor_static_digits_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 2> seed_editor_selected_digit_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> seed_editor_move_help_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> seed_editor_change_help_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 20> seed_editor_accept_help_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 20> seed_editor_range_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> seed_editor_random_help_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 12> options_heading_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 12> options_continue_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 20> options_reset_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 16> options_title_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 2> options_cursor_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 40> game_over_text_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 16> floor_transition_text_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, passive_shop::option_count> shop_item_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> shop_price_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 40> shop_name_sprites;
+    bn::optional<bn::sprite_ptr> shop_pickup_animation_sprite;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> shop_status_sprites;
+    BN_DATA_EWRAM_BSS static bn::vector<bn::sprite_ptr, 24> shop_help_sprites;
+    bn::optional<bn::sprite_ptr> shop_adventurer_sprite;
+    bn::optional<bn::sprite_ptr> shop_coin_counter_sprite;
+    int shop_purchase_name_timer = 0;
+    int shop_purchase_name_x = 0;
+    int shop_pickup_animation_timer = 0;
+    int shop_touch_animation_slot = 0;
+    int shop_price_start[passive_shop::option_count] = {};
+    int shop_price_count[passive_shop::option_count] = {};
+    int shop_price_blink_timer[passive_shop::option_count] = {};
+    bool shop_touch_latched = false;
     bool game_over = false;
     bn::fixed title_scale = bn::fixed(1.75);
     bn::fixed credit_scale = bn::fixed(0.75);
@@ -1623,17 +2067,29 @@ int main()
         set_room_palette_tint(special_key_sprite.palette());
         set_room_palette_tint(energy_potion_sprite.palette());
         set_room_palette_tint(sprint_potion_sprite.palette());
+        set_room_palette_tint(medikit_sprite.palette());
+        set_room_palette_tint(coin_sprite.palette());
+        for(bn::sprite_ptr &sprite : reward_room_reward_sprites)
+        {
+            set_room_palette_tint(sprite.palette());
+        }
+        for(bn::sprite_ptr &sprite : coin_drop_sprites)
+        {
+            set_room_palette_tint(sprite.palette());
+        }
+        for(bn::sprite_ptr &sprite : enemy_death_sprites)
+        {
+            set_room_palette_tint(sprite.palette());
+        }
         set_room_palette_tint(campfire_column_palette);
         set_room_palette_tint(composition_box_palette);
         set_room_palette_tint(campfire_library_front_palette);
         set_room_palette_tint(campfire_library_back_palette);
         set_room_palette_tint(trapdoor_ability_palette);
         set_room_palette_tint(stairs_palette);
-        if (campfire_reward_sprite.has_value())
-        {
-            bn::sprite_palette_ptr reward_palette = campfire_reward_sprite->palette();
-            set_room_palette_tint(reward_palette);
-        }
+        for(auto& reward_sprite : campfire_reward_sprites)
+            if(reward_sprite.has_value())
+                set_room_palette_tint(reward_sprite->palette());
         if (placed_bomb_sprite.has_value())
         {
             bn::sprite_palette_ptr bomb_palette = placed_bomb_sprite->palette();
@@ -1668,6 +2124,10 @@ int main()
             set_room_palette_tint(sprite.palette());
         for(bn::sprite_ptr &sprite : imported_stairs_sprites)
             set_room_palette_tint(sprite.palette());
+        for(bn::sprite_ptr &sprite : imported_portal_sprites)
+            set_room_palette_tint(sprite.palette());
+        if(world_portal_sprite.has_value())
+            set_room_palette_tint(world_portal_sprite->palette());
         for (bn::sprite_ptr &door : room_door_sprites)
         {
             bn::sprite_palette_ptr palette = door.palette();
@@ -1691,6 +2151,11 @@ int main()
         for (bn::sprite_ptr &npc : npc_sprites)
         {
             bn::sprite_palette_ptr palette = npc.palette();
+            set_room_palette_tint(palette);
+        }
+        for(bn::sprite_ptr &bullet : adventure_bullet_sprites)
+        {
+            bn::sprite_palette_ptr palette = bullet.palette();
             set_room_palette_tint(palette);
         }
         for (bn::sprite_ptr &skeleton : skeleton_sprites)
@@ -1806,6 +2271,8 @@ int main()
         fade_sprites(inventory_ability_frames);
         fade_sprites(inventory_ability_icons);
         fade_sprites(inventory_ability_level_sprites);
+        if(inventory_portal_frame.has_value()) { bn::sprite_palette_ptr palette = inventory_portal_frame->palette(); palette.set_fade(bn::colors::black, safe_intensity); }
+        if(inventory_portal_icon.has_value()) { bn::sprite_palette_ptr palette = inventory_portal_icon->palette(); palette.set_fade(bn::colors::black, safe_intensity); }
         fade_sprites(ability_data_text_sprites);
         if (ability_data_icon.has_value())
         {
@@ -1814,9 +2281,21 @@ int main()
         }
         fade_sprites(key_count_text_sprites);
         fade_sprites(rescued_count_text_sprites);
+        fade_sprites(medikit_count_text_sprites);
+        fade_sprites(coin_count_text_sprites);
         if (key_icon.has_value())
         {
             bn::sprite_palette_ptr palette = key_icon->palette();
+            palette.set_fade(bn::colors::black, safe_intensity);
+        }
+        if(medikit_icon.has_value())
+        {
+            bn::sprite_palette_ptr palette = medikit_icon->palette();
+            palette.set_fade(bn::colors::black, safe_intensity);
+        }
+        if(coin_icon.has_value())
+        {
+            bn::sprite_palette_ptr palette = coin_icon->palette();
             palette.set_fade(bn::colors::black, safe_intensity);
         }
         bn::sprite_palette_ptr rescued_palette = inventory_rescued_icon.palette();
@@ -2696,13 +3175,16 @@ int main()
     };
     auto create_imported_objects = [&]()
     {
-        for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
+        if(!current_imported_room().boss)
         {
-            imported_ability_sprites.push_back(
-                bn::sprite_items::hability_dash_icon.create_sprite(point.x, point.y));
-            imported_ability_sprites.back().set_bg_priority(1);
-            imported_ability_sprites.back().set_z_order(-2);
-            imported_ability_sprites.back().set_visible(false);
+            for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
+            {
+                imported_ability_sprites.push_back(
+                    bn::sprite_items::hability_dash_icon.create_sprite(point.x, point.y));
+                imported_ability_sprites.back().set_bg_priority(1);
+                imported_ability_sprites.back().set_z_order(-2);
+                imported_ability_sprites.back().set_visible(false);
+            }
         }
         for(const imported_room::Object &object : current_imported_room().objects)
         {
@@ -2711,6 +3193,13 @@ int main()
                 imported_campfire_sprites.push_back(
                     bn::sprite_items::campfire.create_sprite(object.x, object.y, object.frame));
                 imported_campfire_sprites.back().set_bg_priority(1);
+                continue;
+            }
+            if(object.role == imported_room::Role::PORTAL)
+            {
+                imported_portal_sprites.push_back(bn::sprite_items::portal_16x16_animate.create_sprite(object.x, object.y, object.frame));
+                imported_portal_sprites.back().set_bg_priority(1);
+                imported_portal_sprites.back().set_visible(game_save::has_run());
                 continue;
             }
             if(object.role == imported_room::Role::STAIRS)
@@ -2737,6 +3226,8 @@ int main()
                 continue;
             }
             if(object.role != imported_room::Role::DECORATION)
+                continue;
+            if(current_imported_room().menu_shop_room && object.asset == imported_room::Asset::PLAYER)
                 continue;
             const bn::sprite_item *item = nullptr;
             switch(object.asset)
@@ -2873,12 +3364,19 @@ int main()
 
     auto update_room_obstacles = [&]()
     {
+        coin_drop_sprites.clear();
+        for(int index = 0; index < max_enemy_death_animations; ++index)
+        {
+            enemy_death_animations[index].active = false;
+            enemy_death_sprites[index].set_visible(false);
+        }
         composition_object_sprites.clear();
         imported_object_sprites.clear();
         imported_item_sprites.clear();
         imported_ability_sprites.clear();
         imported_campfire_sprites.clear();
         imported_stairs_sprites.clear();
+        imported_portal_sprites.clear();
         imported_chest_sprite_index = -1;
         imported_chest_frame = 0;
         imported_chest_target_frame = 0;
@@ -2917,7 +3415,10 @@ int main()
         int layout_count = 0;
         RoomTemplateId room_template = room_manager.current_template();
         int obstacle_room_id = room_manager.current_room_id();
-        if(room_manager.room_background(obstacle_room_id) == RoomBackgroundId::MENU_START)
+        // La sala principal y la tienda comparten fondo, pero la tienda debe
+        // construir los muebles definidos por su JSON.
+        if(room_manager.room_background(obstacle_room_id) == RoomBackgroundId::MENU_START &&
+           !imported_room::contains(room_template))
         {
             active_skeleton_count = 0;
             active_bat_count = 0;
@@ -3211,6 +3712,7 @@ int main()
         }
         if(imported_room::contains(room_template))
             create_imported_objects();
+        refresh_room_coin_drop_sprites();
         if(!room_manager.is_menu_floor())
         {
             uint8_t seen = game_save::records().enemies_seen;
@@ -3776,6 +4278,394 @@ int main()
         }
         return bullet_hit_player;
     };
+    auto start_enemy_death_animation = [&](int kind, int index, int enemy_x, int enemy_y)
+    {
+        int death_frame = 0;
+        bn::optional<bn::sprite_palette_ptr> death_palette;
+        if(kind == 0 && index < skeleton_sprites.size())
+        {
+            death_frame = skeleton_displayed_frames[index] >= 0 ?
+                skeleton_displayed_frames[index] : 0;
+            death_palette = skeleton_sprites[index].palette();
+        }
+        else if(kind == 1 && index < bat_sprites.size())
+        {
+            death_frame = bat_displayed_frames[index] >= 0 ? bat_displayed_frames[index] : 0;
+            death_palette = bat_sprites[index].palette();
+        }
+        else if(kind == 2 && index < plant_sprites.size())
+        {
+            death_frame = plant_displayed_frames[index] >= 0 ? plant_displayed_frames[index] : 0;
+            death_palette = plant_sprites[index].palette();
+        }
+        else if(kind == 3 && index < mushy_sprites.size())
+        {
+            death_frame = mushy_direction_frames[room_manager.current_room_id()][index] +
+                (mushy_walking[room_manager.current_room_id()][index] ? mushy_animation_frame : 0);
+            death_palette = mushy_sprites[index].palette();
+        }
+
+        for(int slot = 0; slot < max_enemy_death_animations; ++slot)
+        {
+            EnemyDeathAnimationState &death = enemy_death_animations[slot];
+            if(death.active)
+                continue;
+            death.active = true;
+            death.kind = kind;
+            death.x = enemy_x;
+            death.y = enemy_y;
+            death.timer = 0;
+            bn::sprite_ptr &sprite = enemy_death_sprites[slot];
+            if(kind == 0)
+                sprite.set_tiles(bn::sprite_items::skeleton.tiles_item(), death_frame);
+            else if(kind == 1)
+                sprite.set_tiles(bn::sprite_items::bat.tiles_item(), death_frame);
+            else if(kind == 2)
+                sprite.set_tiles(bn::sprite_items::plant_enemy.tiles_item(), death_frame);
+            else
+                sprite.set_tiles(bn::sprite_items::mushy.tiles_item(), death_frame);
+            sprite.set_palette(*death_palette);
+            sprite.set_position(enemy_x, enemy_y);
+            sprite.set_visible(true);
+            break;
+        }
+        bn::sound_items::hit.play();
+    };
+    auto update_enemy_death_animations = [&]()
+    {
+        constexpr int animation_duration = 27;
+        constexpr int blink_interval = 3;
+        for(int index = 0; index < max_enemy_death_animations; ++index)
+        {
+            EnemyDeathAnimationState &death = enemy_death_animations[index];
+            if(!death.active)
+                continue;
+            int rise = death.timer / blink_interval;
+            if(rise > 8)
+                rise = 8;
+            enemy_death_sprites[index].set_position(death.x, death.y - rise);
+            enemy_death_sprites[index].set_visible(
+                (death.timer / blink_interval) % 2 == 0);
+            ++death.timer;
+            if(death.timer >= animation_duration)
+            {
+                death.active = false;
+                enemy_death_sprites[index].set_visible(false);
+            }
+        }
+    };
+    auto update_adventure_bullets = [&]()
+    {
+        update_enemy_death_animations();
+        int room_id = room_manager.current_room_id();
+        if(adventure_bullet_room_id != room_id)
+        {
+            adventure_bullet_room_id = room_id;
+            for(int index = 0; index < max_adventure_bullets; ++index)
+            {
+                adventure_bullets[index].active = false;
+                adventure_bullet_sprites[index].set_visible(false);
+            }
+        }
+
+        auto remove_enemy = [&](int kind, int index)
+        {
+            if(index < 0)
+                return;
+            int enemy_x = 0;
+            int enemy_y = 0;
+            if(kind == 0 && index < skeleton_counts[room_id])
+            {
+                enemy_x = skeleton_x[index];
+                enemy_y = skeleton_y[index];
+            }
+            else if(kind == 1 && index < bat_counts[room_id])
+            {
+                enemy_x = bat_x[index];
+                enemy_y = bat_y[index];
+            }
+            else if(kind == 2 && index < plant_counts[room_id])
+            {
+                int position = plant_position_indices[room_id][index];
+                enemy_x = plant_coordinate(room_id, position, 0);
+                enemy_y = plant_coordinate(room_id, position, 1);
+            }
+            else if(kind == 3 && index < mushy_counts[room_id])
+            {
+                enemy_x = mushy_room_x[room_id][index];
+                enemy_y = mushy_room_y[room_id][index];
+            }
+            else
+                return;
+            start_enemy_death_animation(kind, index, enemy_x, enemy_y);
+            int last = -1;
+            if(kind == 0 && index < skeleton_counts[room_id])
+            {
+                last = skeleton_counts[room_id] - 1;
+                auto swap_value = [&](int &left, int &right) { int value = left; left = right; right = value; };
+                swap_value(skeleton_path_positions[index], skeleton_path_positions[last]);
+                swap_value(skeleton_x[index], skeleton_x[last]);
+                swap_value(skeleton_y[index], skeleton_y[last]);
+                swap_value(skeleton_walk_frames[index], skeleton_walk_frames[last]);
+                swap_value(skeleton_animation_timers[index], skeleton_animation_timers[last]);
+                swap_value(skeleton_displayed_frames[index], skeleton_displayed_frames[last]);
+                swap_value(skeleton_start_corners[room_id][index], skeleton_start_corners[room_id][last]);
+                swap_value(skeleton_room_path_positions[room_id][index], skeleton_room_path_positions[room_id][last]);
+                bool initialized = skeleton_room_path_initialized[room_id][index];
+                skeleton_room_path_initialized[room_id][index] = skeleton_room_path_initialized[room_id][last];
+                skeleton_room_path_initialized[room_id][last] = initialized;
+                --skeleton_counts[room_id];
+                --active_skeleton_count;
+                skeleton_displayed_frames[index] = -1;
+                skeleton_sprites[last].set_visible(false);
+            }
+            else if(kind == 1 && index < bat_counts[room_id])
+            {
+                last = bat_counts[room_id] - 1;
+#define SWAP_ALLY_BAT_STATE(field) \
+                { auto value = field[room_id][index]; field[room_id][index] = field[room_id][last]; field[room_id][last] = value; }
+                SWAP_ALLY_BAT_STATE(bat_start_x);
+                SWAP_ALLY_BAT_STATE(bat_start_y);
+                SWAP_ALLY_BAT_STATE(bat_start_dx);
+                SWAP_ALLY_BAT_STATE(bat_start_dy);
+                SWAP_ALLY_BAT_STATE(bat_start_animation_frames);
+                SWAP_ALLY_BAT_STATE(bat_start_animation_timers);
+                SWAP_ALLY_BAT_STATE(bat_room_x);
+                SWAP_ALLY_BAT_STATE(bat_room_y);
+                SWAP_ALLY_BAT_STATE(bat_room_dx);
+                SWAP_ALLY_BAT_STATE(bat_room_dy);
+                SWAP_ALLY_BAT_STATE(bat_room_animation_frames);
+                SWAP_ALLY_BAT_STATE(bat_room_animation_timers);
+#undef SWAP_ALLY_BAT_STATE
+#define SWAP_ALLY_BAT_RUNTIME(field) \
+                { auto value = field[index]; field[index] = field[last]; field[last] = value; }
+                SWAP_ALLY_BAT_RUNTIME(bat_x);
+                SWAP_ALLY_BAT_RUNTIME(bat_y);
+                SWAP_ALLY_BAT_RUNTIME(bat_dx);
+                SWAP_ALLY_BAT_RUNTIME(bat_dy);
+                SWAP_ALLY_BAT_RUNTIME(bat_animation_frames);
+                SWAP_ALLY_BAT_RUNTIME(bat_animation_timers);
+                SWAP_ALLY_BAT_RUNTIME(bat_displayed_frames);
+#undef SWAP_ALLY_BAT_RUNTIME
+                --bat_counts[room_id];
+                --active_bat_count;
+                bat_displayed_frames[index] = -1;
+                bat_sprites[last].set_visible(false);
+            }
+            else if(kind == 2 && index < plant_counts[room_id])
+            {
+                last = plant_counts[room_id] - 1;
+                auto swap_value = [&](int &left, int &right) { int value = left; left = right; right = value; };
+                swap_value(plant_position_indices[room_id][index], plant_position_indices[room_id][last]);
+                swap_value(plant_shot_cooldowns[room_id][index], plant_shot_cooldowns[room_id][last]);
+                swap_value(plant_fire_animation_steps[index], plant_fire_animation_steps[last]);
+                swap_value(plant_fire_animation_timers[index], plant_fire_animation_timers[last]);
+                swap_value(plant_displayed_frames[index], plant_displayed_frames[last]);
+                --plant_counts[room_id];
+                --active_plant_count;
+                plant_sprites[last].set_visible(false);
+                if(index < active_plant_count)
+                {
+                    int moved_position = plant_position_indices[room_id][index];
+                    plant_sprites[index].set_position(
+                        plant_coordinate(room_id, moved_position, 0),
+                        plant_coordinate(room_id, moved_position, 1));
+                    if(plant_displayed_frames[index] >= 0)
+                    {
+                        plant_sprites[index].set_tiles(
+                            bn::sprite_items::plant_enemy.tiles_item(),
+                            plant_displayed_frames[index]);
+                    }
+                    plant_sprites[index].set_visible(true);
+                }
+            }
+            else if(kind == 3 && index < mushy_counts[room_id])
+            {
+                last = mushy_counts[room_id] - 1;
+                mushy_room_x[room_id][index] = mushy_room_x[room_id][last];
+                mushy_room_y[room_id][index] = mushy_room_y[room_id][last];
+                mushy_direction_frames[room_id][index] = mushy_direction_frames[room_id][last];
+                mushy_move_axes[room_id][index] = mushy_move_axes[room_id][last];
+                mushy_walking[room_id][index] = mushy_walking[room_id][last];
+                --mushy_counts[room_id];
+                --active_mushy_count;
+                mushy_sprites[last].set_visible(false);
+                if(index < active_mushy_count)
+                {
+                    mushy_sprites[index].set_position(mushy_room_x[room_id][index],
+                                                       mushy_room_y[room_id][index]);
+                    mushy_sprites[index].set_tiles(bn::sprite_items::mushy.tiles_item(),
+                        mushy_direction_frames[room_id][index] +
+                            (mushy_walking[room_id][index] ? mushy_animation_frame : 0));
+                }
+            }
+            else
+                return;
+
+            if(familiar_active && familiar_room_id == room_id)
+            {
+                if(familiar_target_kind == kind && familiar_target_index == index)
+                {
+                    familiar_active = false;
+                    familiar_world_sprite.set_visible(false);
+                }
+                else if(familiar_target_kind == kind && familiar_target_index == last)
+                {
+                    familiar_target_index = index;
+                }
+            }
+            try_drop_enemy_loot(room_id, enemy_x, enemy_y);
+        };
+        auto nearest_enemy = [&](int from_x, int from_y, int &target_x, int &target_y,
+                                 int &target_kind, int &target_index)
+        {
+            int closest_distance = 0x7fffffff;
+            bool found = false;
+            auto consider_enemy = [&](int enemy_x, int enemy_y, int kind, int index)
+            {
+                int dx = enemy_x - from_x;
+                int dy = enemy_y - from_y;
+                int distance = dx * dx + dy * dy;
+                if(distance < closest_distance)
+                {
+                    closest_distance = distance;
+                    target_x = enemy_x;
+                    target_y = enemy_y;
+                    target_kind = kind;
+                    target_index = index;
+                    found = true;
+                }
+            };
+            for(int index = 0; index < active_skeleton_count; ++index)
+                consider_enemy(skeleton_x[index], skeleton_y[index], 0, index);
+            for(int index = 0; index < active_bat_count; ++index)
+                consider_enemy(bat_x[index], bat_y[index], 1, index);
+            for(int index = 0; index < active_mushy_count; ++index)
+                consider_enemy(mushy_room_x[room_id][index], mushy_room_y[room_id][index], 3, index);
+            for(int index = 0; index < active_plant_count; ++index)
+            {
+                int position = plant_position_indices[room_id][index];
+                consider_enemy(plant_coordinate(room_id, position, 0),
+                               plant_coordinate(room_id, position, 1), 2, index);
+            }
+            return found;
+        };
+
+        for(int index = 0; index < max_adventure_bullets; ++index)
+        {
+            PlantBulletState &bullet = adventure_bullets[index];
+            if(!bullet.active)
+                continue;
+            bullet.x += bullet.velocity_x;
+            bullet.y += bullet.velocity_y;
+            if(bullet.x < bn::fixed(-120) || bullet.x > bn::fixed(120) ||
+               bullet.y < bn::fixed(-72) || bullet.y > bn::fixed(72))
+            {
+                bullet.active = false;
+                adventure_bullet_sprites[index].set_visible(false);
+                continue;
+            }
+            adventure_bullet_sprites[index].set_position(bullet.x, bullet.y);
+            int target_x = 0;
+            int target_y = 0;
+            int target_kind = -1;
+            int target_index = -1;
+            if(nearest_enemy(bullet.x.integer(), bullet.y.integer(), target_x, target_y,
+                             target_kind, target_index))
+            {
+                bn::fixed dx = bn::fixed(target_x) - bullet.x;
+                bn::fixed dy = bn::fixed(target_y) - bullet.y;
+                int bullet_half_size = 8 + (4 * adventure_bullet_stats.size).integer();
+                if(game::sprite_collision_overlaps(dx, dy, bullet_half_size,
+                                                    -bullet_half_size, bullet_half_size))
+                {
+                    bullet.active = false;
+                    adventure_bullet_sprites[index].set_visible(false);
+                    if(adventure_bullet_stats.damage > 0)
+                        remove_enemy(target_kind, target_index);
+                }
+            }
+        }
+
+        if(world_pickup_animation_active || bombed_rooms[room_id])
+            return;
+
+        for(int npc_index = 0; npc_index < max_npcs; ++npc_index)
+        {
+            const NpcState &npc = npcs[npc_index];
+            if(!npc.active || npc_index != carried_npc_index)
+                continue;
+            int target_x = 0;
+            int target_y = 0;
+            int target_kind = -1;
+            int target_index = -1;
+            if(!nearest_enemy(npc_sprite_x[npc_index], npc_sprite_y[npc_index],
+                              target_x, target_y, target_kind, target_index))
+                continue;
+            int &cooldown = adventure_shot_cooldowns[npc_index];
+            if(cooldown < adventure_bullet_stats.shot_interval_frames)
+                ++cooldown;
+            if(cooldown < adventure_bullet_stats.shot_interval_frames)
+                continue;
+            int active_bullet_count = 0;
+            for(int index = 0; index < max_adventure_bullets; ++index)
+                if(adventure_bullets[index].active)
+                    ++active_bullet_count;
+            int available_reserve = adventure_bullet_stats.reserve - active_bullet_count;
+            if(available_reserve <= 0)
+                continue;
+
+            int delta_x = target_x - npc_sprite_x[npc_index];
+            int delta_y = target_y - npc_sprite_y[npc_index];
+            int abs_x = delta_x < 0 ? -delta_x : delta_x;
+            int abs_y = delta_y < 0 ? -delta_y : delta_y;
+            int normalizer = abs_x > abs_y ? abs_x : abs_y;
+            if(normalizer == 0)
+                normalizer = 1;
+            bn::fixed base_velocity_x = bn::fixed(delta_x) * adventure_bullet_stats.speed / normalizer;
+            bn::fixed base_velocity_y = bn::fixed(delta_y) * adventure_bullet_stats.speed / normalizer;
+            bn::fixed perpendicular_x = -base_velocity_y / adventure_bullet_stats.speed;
+            bn::fixed perpendicular_y = base_velocity_x / adventure_bullet_stats.speed;
+            int projectile_count = adventure_bullet_stats.projectile_count;
+            if(projectile_count > available_reserve)
+                projectile_count = available_reserve;
+            int spawned = 0;
+            for(int projectile = 0; projectile < projectile_count; ++projectile)
+            {
+                int bullet_slot = -1;
+                for(int index = 0; index < max_adventure_bullets; ++index)
+                    if(!adventure_bullets[index].active)
+                    {
+                        bullet_slot = index;
+                        break;
+                    }
+                if(bullet_slot < 0)
+                    break;
+
+                int centered_twice = projectile * 2 - (projectile_count - 1);
+                bn::fixed spread = bn::fixed(centered_twice) / 10;
+                PlantBulletState &bullet = adventure_bullets[bullet_slot];
+                bullet.x = bn::fixed(npc_sprite_x[npc_index]) + perpendicular_x * centered_twice * 2;
+                bullet.y = bn::fixed(npc_sprite_y[npc_index]) + perpendicular_y * centered_twice * 2;
+                bullet.velocity_x = base_velocity_x + perpendicular_x * spread * adventure_bullet_stats.speed;
+                bullet.velocity_y = base_velocity_y + perpendicular_y * spread * adventure_bullet_stats.speed;
+                bn::fixed abs_velocity_x = bullet.velocity_x < 0 ? -bullet.velocity_x : bullet.velocity_x;
+                bn::fixed abs_velocity_y = bullet.velocity_y < 0 ? -bullet.velocity_y : bullet.velocity_y;
+                bn::fixed velocity_normalizer = abs_velocity_x > abs_velocity_y ? abs_velocity_x : abs_velocity_y;
+                if(velocity_normalizer > 0)
+                {
+                    bullet.velocity_x = bullet.velocity_x * adventure_bullet_stats.speed / velocity_normalizer;
+                    bullet.velocity_y = bullet.velocity_y * adventure_bullet_stats.speed / velocity_normalizer;
+                }
+                bullet.active = true;
+                adventure_bullet_sprites[bullet_slot].set_position(bullet.x, bullet.y);
+                adventure_bullet_sprites[bullet_slot].set_visible(true);
+                ++spawned;
+            }
+            if(spawned > 0)
+                cooldown = 0;
+        }
+    };
     auto overlaps_campfire = [&](int player_x, int player_y)
     {
         if(imported_room::contains(room_manager.current_template()))
@@ -3931,6 +4821,14 @@ int main()
     };
     auto reset_floor_npcs = [&](bool keep_carried_npc)
     {
+        for(int index = 0; index < max_npcs; ++index)
+            adventure_shot_cooldowns[index] = 0;
+        for(int index = 0; index < max_adventure_bullets; ++index)
+        {
+            adventure_bullets[index].active = false;
+            adventure_bullet_sprites[index].set_visible(false);
+        }
+        adventure_bullet_room_id = room_manager.current_room_id();
         NpcState previous_carried_npc;
         bool preserve = keep_carried_npc && carried_npc_index >= 0;
         if (preserve)
@@ -3950,13 +4848,18 @@ int main()
             carried_npc_index = max_npcs - 1;
         }
 
-        int available_room_count = room_manager.room_count() - 4;
+        int available_room_count = room_manager.stairs_room_id() - 2;
         if (available_room_count <= 0)
         {
             return;
         }
 
         bool used_rooms[RoomManager::max_rooms] = {};
+        bool used_sprite_variants[4] = {};
+        if(preserve)
+        {
+            used_sprite_variants[npcs[max_npcs - 1].sprite_variant] = true;
+        }
         int npc_count = floor_random.get_int(1, 3);
         for (int index = 0; index < npc_count; ++index)
         {
@@ -3977,6 +4880,17 @@ int main()
             npcs[index].room_id = room_id;
             q_spawn_position(room_manager.room_template(room_id), position_index,
                              npcs[index].x, npcs[index].y);
+            int variant_start = floor_random.get_int(4);
+            for(int offset = 0; offset < 4; ++offset)
+            {
+                int variant = (variant_start + offset) % 4;
+                if(!used_sprite_variants[variant])
+                {
+                    npcs[index].sprite_variant = variant;
+                    used_sprite_variants[variant] = true;
+                    break;
+                }
+            }
         }
     };
     auto update_npc_sprites = [&](int player_frame)
@@ -4043,12 +4957,64 @@ int main()
             sprite.set_position(npc_x, npc_y);
             npc_sprite_x[index] = npc_x;
             npc_sprite_y[index] = npc_y;
-            sprite.set_tiles(bn::sprite_items::player.tiles_item(),
-                             carried ? player_frame : idle_npc_frame);
+            int npc_frame = carried ? player_frame : idle_npc_frame;
+            switch(npc.sprite_variant)
+            {
+            case 0:
+                sprite.set_tiles(bn::sprite_items::aventure_1.tiles_item(), npc_frame);
+                sprite.set_palette(bn::sprite_items::aventure_1.palette_item());
+                break;
+            case 1:
+                sprite.set_tiles(bn::sprite_items::aventure_2.tiles_item(), npc_frame);
+                sprite.set_palette(bn::sprite_items::aventure_2.palette_item());
+                break;
+            case 2:
+                sprite.set_tiles(bn::sprite_items::aventure_3.tiles_item(), npc_frame);
+                sprite.set_palette(bn::sprite_items::aventure_3.palette_item());
+                break;
+            default:
+                sprite.set_tiles(bn::sprite_items::aventure_4.tiles_item(), npc_frame);
+                sprite.set_palette(bn::sprite_items::aventure_4.palette_item());
+                break;
+            }
             // El seguidor va por delante de piedras y puertas; los NPC de la fogata
             // se ordenan con el jugador segun su posicion vertical.
             sprite.set_z_order(carried ? -3 : (y < npc_y ? -2 : 0));
-            sprite.set_visible(visible);
+            bool pickup_blink_visible = !medikit_pickup_animation_active ||
+                index != medikit_pickup_npc_index ||
+                (medikit_pickup_animation_timer / 4) % 2 == 0;
+            sprite.set_visible(visible && pickup_blink_visible);
+        }
+    };
+    auto update_medikit_pickup_animation = [&]()
+    {
+        if(!medikit_pickup_animation_active || medikit_pickup_npc_index < 0 ||
+           medikit_pickup_npc_index >= max_npcs)
+            return;
+
+        constexpr int animation_duration = 40;
+        constexpr int blink_interval = 4;
+        constexpr int rise_pixels = 8;
+        NpcState& npc = npcs[medikit_pickup_npc_index];
+        int rise = medikit_pickup_animation_timer / blink_interval;
+        if(rise > rise_pixels)
+            rise = rise_pixels;
+        if(medikit_use_sprite.has_value())
+        {
+            medikit_use_sprite->set_position(npc.x, npc.y - 12 - rise);
+            medikit_use_sprite->set_visible((medikit_pickup_animation_timer / blink_interval) % 2 == 0);
+        }
+
+        ++medikit_pickup_animation_timer;
+        if(medikit_pickup_animation_timer >= animation_duration)
+        {
+            medikit_pickup_animation_active = false;
+            world_pickup_animation_active = false;
+            carried_npc_index = medikit_pickup_npc_index;
+            medikit_pickup_npc_index = -1;
+            medikit_pickup_animation_timer = 0;
+            medikit_use_sprite.reset();
+            reset_follow_history();
         }
     };
     auto overlaps_delivered_npc = [&](int player_x, int player_y)
@@ -4177,6 +5143,76 @@ int main()
                overlaps_reward_lever;
     };
 
+    auto clear_world_portal = [&]()
+    {
+        world_portal_sprite.reset();
+        world_portal_room_id = -1;
+        portal_animation_timer = 0;
+        portal_animation_frame = 0;
+    };
+    auto deploy_world_portal = [&]()
+    {
+        int offsets[4][2] = {{0, -20}, {0, 20}, {-20, 0}, {20, 0}};
+        if(direccion == Direccion::ABAJO)
+        {
+            offsets[0][1] = 20; offsets[1][1] = -20;
+        }
+        else if(direccion == Direccion::IZQUIERDA)
+        {
+            offsets[0][0] = -20; offsets[0][1] = 0;
+            offsets[1][0] = 20; offsets[1][1] = 0;
+            offsets[2][0] = 0; offsets[2][1] = -20;
+            offsets[3][0] = 0; offsets[3][1] = 20;
+        }
+        else if(direccion == Direccion::DERECHA)
+        {
+            offsets[0][0] = 20; offsets[0][1] = 0;
+            offsets[1][0] = -20; offsets[1][1] = 0;
+            offsets[2][0] = 0; offsets[2][1] = -20;
+            offsets[3][0] = 0; offsets[3][1] = 20;
+        }
+        int selected_x = x;
+        int selected_y = y;
+        bool found = false;
+        for(const auto& offset : offsets)
+        {
+            int candidate_x = x + offset[0];
+            int candidate_y = y + offset[1];
+            if(candidate_x < -100 || candidate_x > 100 || candidate_y < -60 || candidate_y > 56 ||
+               player_position_blocked(candidate_x, candidate_y))
+                continue;
+            selected_x = candidate_x;
+            selected_y = candidate_y;
+            found = true;
+            break;
+        }
+        if(!found) return false;
+        clear_world_portal();
+        world_portal_x = selected_x;
+        world_portal_y = selected_y;
+        world_portal_room_id = room_manager.current_room_id();
+        world_portal_sprite.emplace(bn::sprite_items::portal_16x16_animate.create_sprite(world_portal_x, world_portal_y));
+        world_portal_sprite->set_bg_priority(1);
+        world_portal_sprite->set_z_order(-2);
+        return true;
+    };
+    auto open_campfire_exit_portal = [&]()
+    {
+        constexpr int portal_gap = 16;
+        int right_adventurer_x = campfire_x + delivered_npc_offsets[1][0];
+        int right_adventurer_y = campfire_y + delivered_npc_offsets[1][1];
+        int portal_x = right_adventurer_x + portal_gap;
+        int portal_y = right_adventurer_y;
+        clear_world_portal();
+        world_portal_x = portal_x;
+        world_portal_y = portal_y;
+        world_portal_room_id = room_manager.current_room_id();
+        world_portal_sprite.emplace(
+            bn::sprite_items::portal_16x16_animate.create_sprite(portal_x, portal_y));
+        world_portal_sprite->set_bg_priority(1);
+        world_portal_sprite->set_z_order(-2);
+    };
+
     int floor_key_room = -1;
     int floor_key_x = 0;
     int floor_key_y = 0;
@@ -4252,6 +5288,11 @@ int main()
             reward_lever_room_ids[index] = -1;
             reward_lever_x[index] = 0;
             reward_lever_y[index] = 0;
+        }
+
+        if(room_manager.reward_room_id() < 0)
+        {
+            return;
         }
 
         int campfire_room_id = -1;
@@ -4543,7 +5584,8 @@ int main()
     {
         floor_key_collected = false;
         floor_key_room = -1;
-        if (room_manager.room_count() < 3)
+        int eligible_room_count = room_manager.stairs_room_id() - 1;
+        if (eligible_room_count <= 0)
         {
             floor_key_sprite.set_visible(false);
             return;
@@ -4552,7 +5594,7 @@ int main()
         // Las Q del documento son puntos asignados para objetos y aventureros.
         for (int attempt = 0; attempt < 32 && floor_key_room < 0; ++attempt)
         {
-            int candidate = floor_random.get_int(room_manager.room_count() - 3);
+            int candidate = floor_random.get_int(eligible_room_count);
             int count = q_spawn_count(room_manager.room_template(candidate));
             if (count > 0)
             {
@@ -4588,7 +5630,7 @@ int main()
     {
         special_key_collected = false;
         special_key_room = -1;
-        int eligible_room_count = room_manager.room_count() - 3;
+        int eligible_room_count = room_manager.stairs_room_id() - 1;
         if(eligible_room_count < 2)
         {
             special_key_sprite.set_visible(false);
@@ -4634,14 +5676,39 @@ int main()
     {
         energy_potion_sprite.set_visible(false);
         sprint_potion_sprite.set_visible(false);
+        medikit_sprite.set_visible(false);
+        coin_sprite.set_visible(false);
+        medikit_sprite.set_visible(false);
+        coin_sprite.set_visible(false);
         for (FloorPotionState &potion : floor_potions)
         {
             potion = FloorPotionState();
         }
 
+        // El medikit fijo queda a la izquierda de la fila reservada para recompensas.
+        for(int room_id = 0; room_id < room_manager.stairs_room_id(); ++room_id)
+        {
+            if(room_manager.room_template(room_id) == RoomTemplateId::SPECIAL)
+            {
+                constexpr int medikit_x = -64;
+                constexpr int medikit_y = 16;
+                if(room_manager.add_item(room_id, RoomItemType::MEDIKIT, medikit_x, medikit_y))
+                {
+                    FloorPotionState &medikit = floor_potions[room_id];
+                    medikit.active = true;
+                    medikit.type = RoomItemType::MEDIKIT;
+                    medikit.room_id = room_id;
+                    medikit.x = medikit_x;
+                    medikit.y = medikit_y;
+                    medikit_sprite.set_position(medikit_x, medikit_y);
+                }
+                break;
+            }
+        }
+
         int candidate_room_ids[RoomManager::max_rooms] = {};
         int candidate_count = 0;
-        for (int room_id = 0; room_id < room_manager.room_count() - 3; ++room_id)
+        for (int room_id = 0; room_id < room_manager.stairs_room_id() - 1; ++room_id)
         {
             RoomTemplateId room_template = room_manager.room_template(room_id);
             int q_count = q_spawn_count(room_template);
@@ -4701,8 +5768,13 @@ int main()
                 continue;
             }
 
-            RoomItemType item_type = floor_random.get_int(2) == 0 ?
-                RoomItemType::ENERGY_POTION : RoomItemType::SPRINT_POTION;
+            constexpr RoomItemType floor_item_types[] =
+            {
+                RoomItemType::ENERGY_POTION,
+                RoomItemType::SPRINT_POTION,
+                RoomItemType::MEDIKIT
+            };
+            RoomItemType item_type = floor_item_types[floor_random.get_int(3)];
             if (!room_manager.add_item(room_id, item_type, spawn_x, spawn_y))
             {
                 continue;
@@ -4721,7 +5793,10 @@ int main()
             }
             else
             {
-                sprint_potion_sprite.set_position(spawn_x, spawn_y);
+                bn::sprite_ptr& sprite = item_type == RoomItemType::SPRINT_POTION ?
+                    sprint_potion_sprite : (item_type == RoomItemType::MEDIKIT ?
+                    medikit_sprite : coin_sprite);
+                sprite.set_position(spawn_x, spawn_y);
             }
         }
     };
@@ -4731,21 +5806,29 @@ int main()
         int current_room_id = room_manager.current_room_id();
         bool show_energy_potion = false;
         bool show_sprint_potion = false;
-        if (current_room_id >= 0 && current_room_id < RoomManager::max_rooms)
+        bool show_medikit = false;
+        bool show_coin = false;
+        if (!world_pickup_animation_active && current_room_id >= 0 &&
+            current_room_id < RoomManager::max_rooms)
         {
             const FloorPotionState &potion = floor_potions[current_room_id];
             bool visible = game_started && !game_over && potion.active;
             show_energy_potion = visible && potion.type == RoomItemType::ENERGY_POTION;
             show_sprint_potion = visible && potion.type == RoomItemType::SPRINT_POTION;
+            show_medikit = visible && potion.type == RoomItemType::MEDIKIT;
+            show_coin = visible && potion.type == RoomItemType::COIN;
             if (visible)
             {
-                bn::sprite_ptr &sprite = show_energy_potion ?
-                    energy_potion_sprite : sprint_potion_sprite;
+                bn::sprite_ptr &sprite = show_energy_potion ? energy_potion_sprite :
+                    (show_sprint_potion ? sprint_potion_sprite :
+                    (show_medikit ? medikit_sprite : coin_sprite));
                 sprite.set_position(potion.x, potion.y);
             }
         }
         energy_potion_sprite.set_visible(show_energy_potion);
         sprint_potion_sprite.set_visible(show_sprint_potion);
+        medikit_sprite.set_visible(show_medikit);
+        coin_sprite.set_visible(show_coin);
     };
 
     auto remove_room_item = [&](int room_id, RoomItemType item_type, int item_x, int item_y)
@@ -4777,6 +5860,12 @@ int main()
                 if(object.role == imported_room::Role::ITEM)
                     room_manager.add_item(room_id, imported_item_type(object.asset),
                                           object.x, object.y);
+            // Boss rewards are created by setup_reward_room_rewards(); adding
+            // their & markers here as well would duplicate the ability pickup.
+            if(source.boss)
+            {
+                continue;
+            }
             for(const imported_room::AbilityPoint& point : source.ability_points)
             {
                 if(!point.required && floor_random.get_int(2) == 0) continue;
@@ -4812,7 +5901,8 @@ int main()
     };
     auto update_imported_ability_visibility = [&]()
     {
-        if(!imported_room::contains(room_manager.current_template())) return;
+        if(!imported_room::contains(room_manager.current_template()) ||
+           current_imported_room().boss) return;
         int room_id = room_manager.current_room_id();
         int sprite_index = 0;
         for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
@@ -4838,6 +5928,20 @@ int main()
                 sprite.set_visible(reward != nullptr);
             }
             ++sprite_index;
+        }
+    };
+
+    auto setup_menu_demo_items = [&]()
+    {
+        if(!is_menu_demo_room()) return;
+        int ability_index = 0;
+        for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
+        {
+            if(ability_index >= 7) break;
+            room_manager.add_item(room_manager.current_room_id(),
+                static_cast<RoomItemType>(int(RoomItemType::ABILITY_DASH) + ability_index),
+                point.x, point.y);
+            ++ability_index;
         }
     };
 
@@ -5000,6 +6104,7 @@ int main()
             {
                 const NpcState &npc = npcs[npc_index];
                 if (npc.active && !npc.delivered && npc_index != carried_npc_index &&
+                    (!medikit_pickup_animation_active || npc_index != medikit_pickup_npc_index) &&
                     npc.room_id == room_id)
                 {
                     room_has_adventurer = true;
@@ -5039,13 +6144,13 @@ int main()
 
     auto unlock_reward_room = [&]()
     {
-        if(reward_room_unlocked || !reward_lever_activated[0] ||
+        int reward_room_id = room_manager.reward_room_id();
+        if(reward_room_id < 0 || reward_room_unlocked || !reward_lever_activated[0] ||
            !reward_lever_activated[1] || !reward_lever_activated[2])
         {
             return;
         }
         reward_room_unlocked = true;
-        int reward_room_id = room_manager.reward_room_id();
         constexpr RoomDirection directions[] = {RoomDirection::LEFT, RoomDirection::RIGHT,
             RoomDirection::UP, RoomDirection::DOWN};
         for(RoomDirection direction : directions)
@@ -5140,6 +6245,21 @@ int main()
         }
 
         bombed_rooms[room_id] = true;
+        if(room_manager.current_room_id() == room_id)
+        {
+            for(int index = 0; index < active_skeleton_count; ++index)
+                try_drop_enemy_loot(room_id, skeleton_x[index], skeleton_y[index]);
+            for(int index = 0; index < active_bat_count; ++index)
+                try_drop_enemy_loot(room_id, bat_x[index], bat_y[index]);
+            for(int index = 0; index < active_mushy_count; ++index)
+                try_drop_enemy_loot(room_id, mushy_room_x[room_id][index], mushy_room_y[room_id][index]);
+            for(int index = 0; index < active_plant_count; ++index)
+            {
+                int position = plant_position_indices[room_id][index];
+                try_drop_enemy_loot(room_id, plant_coordinate(room_id, position, 0),
+                                     plant_coordinate(room_id, position, 1));
+            }
+        }
         skeleton_counts[room_id] = 0;
         bat_counts[room_id] = 0;
         mushy_counts[room_id] = 0;
@@ -5229,85 +6349,162 @@ int main()
 
     auto update_campfire_reward_visibility = [&]()
     {
-        if (campfire_reward_sprite.has_value())
+        bool room_visible = game_started && !game_over &&
+            room_manager.current_template() == RoomTemplateId::SPECIAL;
+        for(int slot = 0; slot < max_campfire_rewards; ++slot)
         {
-            bool visible = campfire_reward_active && game_started && !game_over &&
-                room_manager.current_template() == RoomTemplateId::SPECIAL;
-            campfire_reward_sprite->set_visible(visible);
+            if(!campfire_reward_sprites[slot].has_value())
+                continue;
+            bool visible = room_visible && campfire_rewards[slot].active;
+            campfire_reward_sprites[slot]->set_visible(visible);
             if(visible)
-                discover_active_item(campfire_reward_type);
+                discover_active_item(campfire_rewards[slot].type);
         }
+    };
+
+    // Al volver de una pantalla de objetos, restaura los sprites desde el
+    // estado existente de la sala; no vuelve a generar sus recompensas.
+    auto restore_world_item_visibility = [&]()
+    {
+        int room_id = room_manager.current_room_id();
+        floor_key_sprite.set_visible(!floor_key_collected && room_id == floor_key_room);
+        special_key_sprite.set_visible(!special_key_collected && room_id == special_key_room);
+        update_floor_item_visibility();
+        update_imported_item_visibility();
+        update_imported_ability_visibility();
+        update_reward_room_reward_visibility();
+        update_campfire_reward_visibility();
+        refresh_room_coin_drop_sprites();
+    };
+
+    auto sync_legacy_campfire_reward = [&]()
+    {
+        campfire_reward_active = false;
+        campfire_reward_type = RoomItemType::KEY;
+        campfire_reward_level = 1;
+        for(const CampfireRewardState& reward : campfire_rewards)
+            if(reward.active)
+            {
+                campfire_reward_active = true;
+                campfire_reward_type = reward.type;
+                campfire_reward_level = reward.level;
+                break;
+            }
+    };
+
+    auto create_campfire_reward_sprite = [&](int slot)
+    {
+        CampfireRewardState& reward = campfire_rewards[slot];
+        campfire_reward_sprites[slot].reset();
+        bool is_ability = int(reward.type) >= int(RoomItemType::ABILITY_DASH) &&
+            int(reward.type) <= int(RoomItemType::ABILITY_FAMILIAR);
+        if(is_ability)
+        {
+            campfire_reward_sprites[slot].emplace(
+                bn::sprite_items::hability_dash_icon.create_sprite(reward.x, reward.y));
+            set_ability_icon(*campfire_reward_sprites[slot], static_cast<ActiveAbility>(
+                int(reward.type) - int(RoomItemType::ABILITY_DASH)));
+        }
+        else if(reward.type == RoomItemType::KEY)
+            campfire_reward_sprites[slot].emplace(
+                bn::sprite_items::key.create_sprite(reward.x, reward.y));
+        else if(reward.type == RoomItemType::ENERGY_POTION)
+            campfire_reward_sprites[slot].emplace(
+                bn::sprite_items::posion_energy_16x16_animate.create_sprite(
+                    reward.x, reward.y, potion_animation_frame));
+        else
+            campfire_reward_sprites[slot].emplace(
+                bn::sprite_items::posion_sprint_16x16_animate.create_sprite(
+                    reward.x, reward.y, potion_animation_frame));
+        campfire_reward_sprites[slot]->set_bg_priority(1);
+        campfire_reward_sprites[slot]->set_z_order(-2);
+    };
+
+    auto layout_campfire_rewards = [&]()
+    {
+        int active_count = 0;
+        for(const CampfireRewardState& reward : campfire_rewards)
+            if(reward.active)
+                ++active_count;
+        // Primero libera toda la fila; así un premio nuevo nunca elimina a otro
+        // que acaba de ser reubicado en una coordenada compartida.
+        for(const CampfireRewardState& reward : campfire_rewards)
+            if(reward.active)
+                remove_room_item(room_manager.current_room_id(), reward.type, reward.x, reward.y);
+        int active_index = 0;
+        for(int slot = 0; slot < max_campfire_rewards; ++slot)
+        {
+            CampfireRewardState& reward = campfire_rewards[slot];
+            if(!reward.active)
+                continue;
+            int offset_x = 0;
+            if(active_count == 2)
+                offset_x = active_index == 0 ? -16 : 16;
+            else if(active_count == 3)
+                offset_x = (active_index - 1) * 24;
+            reward.x = campfire_reward_x + offset_x;
+            reward.y = campfire_reward_y;
+            room_manager.add_item(room_manager.current_room_id(), reward.type,
+                                  reward.x, reward.y, reward.level);
+            create_campfire_reward_sprite(slot);
+            ++active_index;
+        }
+        sync_legacy_campfire_reward();
+        update_campfire_reward_visibility();
     };
 
     auto clear_campfire_reward = [&]()
     {
-        campfire_reward_active = false;
-        campfire_reward_level = 1;
-        if (campfire_reward_sprite.has_value())
+        for(int slot = 0; slot < max_campfire_rewards; ++slot)
         {
-            campfire_reward_sprite.reset();
+            campfire_rewards[slot] = CampfireRewardState();
+            campfire_reward_sprites[slot].reset();
         }
+        campfire_pending_rewards = 0;
+        campfire_reward_replacement_slot = -1;
+        sync_legacy_campfire_reward();
     };
 
-    auto spawn_campfire_reward = [&](bool from_queue = false)
+    auto remove_campfire_reward = [&](int slot)
     {
-        // Los premios esperan en cola para no apilarse en el mismo tile.
-        if (campfire_reward_active || (campfire_pending_rewards > 0 && !from_queue))
-        {
-            ++campfire_pending_rewards;
+        if(slot < 0 || slot >= max_campfire_rewards || !campfire_rewards[slot].active)
             return;
-        }
+        CampfireRewardState& reward = campfire_rewards[slot];
+        remove_room_item(room_manager.current_room_id(), reward.type, reward.x, reward.y);
+        reward = CampfireRewardState();
+        campfire_reward_sprites[slot].reset();
+        layout_campfire_rewards();
+    };
+
+    auto spawn_campfire_reward = [&]()
+    {
+        int slot = -1;
+        for(int index = 0; index < max_campfire_rewards; ++index)
+            if(!campfire_rewards[index].active)
+            {
+                slot = index;
+                break;
+            }
+        if(slot < 0)
+            return;
 
         bool gives_ability = ! campfire_skill_reward_granted;
-        campfire_reward_level = 1;
+        CampfireRewardState& reward = campfire_rewards[slot];
+        reward = CampfireRewardState();
+        reward.active = true;
         if (gives_ability)
         {
-            campfire_reward_type = static_cast<RoomItemType>(
+            reward.type = static_cast<RoomItemType>(
                 int(RoomItemType::ABILITY_DASH) + campfire_reward_random.get_int(7));
+            campfire_skill_reward_granted = true;
         }
         else
         {
             int pickup = campfire_reward_random.get_int(3);
-            campfire_reward_type = pickup == 0 ? RoomItemType::KEY :
+            reward.type = pickup == 0 ? RoomItemType::KEY :
                 (pickup == 1 ? RoomItemType::ENERGY_POTION : RoomItemType::SPRINT_POTION);
         }
-
-        int room_id = room_manager.current_room_id();
-        if (!room_manager.add_item(room_id, campfire_reward_type,
-                                   campfire_reward_x, campfire_reward_y))
-        {
-            return;
-        }
-
-        if (gives_ability)
-        {
-            campfire_reward_sprite.emplace(bn::sprite_items::hability_dash_icon.create_sprite(
-                campfire_reward_x, campfire_reward_y));
-            ActiveAbility reward_ability = static_cast<ActiveAbility>(
-                int(campfire_reward_type) - int(RoomItemType::ABILITY_DASH));
-            set_ability_icon(*campfire_reward_sprite, reward_ability);
-            campfire_skill_reward_granted = true;
-        }
-        else if (campfire_reward_type == RoomItemType::KEY)
-        {
-            campfire_reward_sprite.emplace(
-                bn::sprite_items::key.create_sprite(campfire_reward_x, campfire_reward_y));
-        }
-        else if (campfire_reward_type == RoomItemType::ENERGY_POTION)
-        {
-            campfire_reward_sprite.emplace(bn::sprite_items::posion_energy_16x16_animate.create_sprite(
-                campfire_reward_x, campfire_reward_y, potion_animation_frame));
-        }
-        else
-        {
-            campfire_reward_sprite.emplace(bn::sprite_items::posion_sprint_16x16_animate.create_sprite(
-                campfire_reward_x, campfire_reward_y, potion_animation_frame));
-        }
-
-        campfire_reward_active = true;
-        campfire_reward_sprite->set_bg_priority(1);
-        campfire_reward_sprite->set_z_order(-2);
-        update_campfire_reward_visibility();
+        layout_campfire_rewards();
         update_map();
     };
 
@@ -5377,7 +6574,11 @@ int main()
         {
             key_icon.reset();
         }
+        medikit_icon.reset();
+        coin_icon.reset();
         key_count_text_sprites.clear();
+        medikit_count_text_sprites.clear();
+        coin_count_text_sprites.clear();
         stamina_bar_background_sprites.clear();
         stamina_bar_liquid_sprites.clear();
         energy_bar_background_sprites.clear();
@@ -5398,6 +6599,15 @@ int main()
         key_icon->set_palette(inventory_key_palette);
         key_icon->set_bg_priority(0);
         key_icon->set_z_order(-13);
+
+        medikit_icon.emplace(bn::sprite_items::medikit.create_sprite(
+            inventory_medikit_x, inventory_medikit_y));
+        medikit_icon->set_bg_priority(0);
+        medikit_icon->set_z_order(-13);
+        coin_icon.emplace(bn::sprite_items::coin.create_sprite(
+            inventory_coin_x, inventory_coin_y));
+        coin_icon->set_bg_priority(0);
+        coin_icon->set_z_order(-13);
 
         for (int index = 0; index < stamina_bar_segments; ++index)
         {
@@ -5431,12 +6641,28 @@ int main()
                                         "ENERGY", energy_bar_label_sprites);
         key_count_text_generator.generate(inventory_key_count_x, inventory_key_y, key_count_label,
                                           key_count_text_sprites);
+        item_count_text_generator.generate(inventory_medikit_count_x, inventory_medikit_y,
+                                           medikit_count_label, medikit_count_text_sprites);
+        item_count_text_generator.generate(inventory_coin_count_x, inventory_coin_y,
+                                           coin_count_label, coin_count_text_sprites);
         floor_text_sprites.clear();
         floor_text_generator.generate(-112, -68, floor_label, floor_text_sprites);
 
         hud_sprites_allocated = true;
         update_stamina_bar_fill(stamina);
         update_energy_bar_fill(energy);
+        refresh_main_hud_visibility();
+    };
+
+    auto hide_hud_for_menu = [&]()
+    {
+        stamina_bar_enabled = false;
+        energy_bar_enabled = false;
+        ability_panel.set_visible(false);
+        ability_icon.set_visible(false);
+        for(bn::sprite_ptr& sprite : ability_level_text_sprites)
+            sprite.set_visible(false);
+        release_hud_sprites();
         refresh_main_hud_visibility();
     };
 
@@ -5641,7 +6867,9 @@ int main()
 
     // Cambiar esta version si se modifica el orden o significado de los campos guardados.
     constexpr unsigned run_snapshot_version_v1 = 0x00010001u;
-    constexpr unsigned run_snapshot_version = 0x00010002u;
+    constexpr unsigned run_snapshot_version_v2 = 0x00010002u;
+    constexpr unsigned run_snapshot_version_v3 = 0x00010003u;
+    constexpr unsigned run_snapshot_version = 0x00010004u;
     constexpr int run_snapshot_bytes_v1 = int(sizeof(unsigned) * 5 + sizeof(room_manager)
         + sizeof(run_seed)
         + sizeof(x)
@@ -5816,14 +7044,17 @@ int main()
         + sizeof(special_key_y)
         + sizeof(special_key_collected)
         + sizeof(run_rooms_explored));
-    constexpr int run_snapshot_bytes = run_snapshot_bytes_v1 + int(sizeof(imported_chest_frame) +
+    constexpr int run_snapshot_bytes_v2 = run_snapshot_bytes_v1 + int(sizeof(imported_chest_frame) +
         sizeof(imported_chest_target_frame) + sizeof(imported_chest_animation_timer));
+    constexpr int run_snapshot_bytes_v3 = run_snapshot_bytes_v2 + int(sizeof(medikit_count));
+    constexpr int run_snapshot_bytes = run_snapshot_bytes_v3 + int(sizeof(campfire_rewards));
     static_assert(run_snapshot_bytes <= game_save::max_run_bytes, "Active run exceeds SRAM budget");
     auto transfer_run_state = [&](auto &archive)
     {
         unsigned version = run_snapshot_version;
         archive.value(version);
-        if(version != run_snapshot_version_v1 && version != run_snapshot_version)
+        if(version != run_snapshot_version_v1 && version != run_snapshot_version_v2 &&
+           version != run_snapshot_version_v3 && version != run_snapshot_version)
             return false;
         archive.value(room_manager);
         archive.value(run_seed);
@@ -6006,7 +7237,8 @@ int main()
         enemy_ambient_random.set_seed(random_states[1]);
         campfire_reward_random.set_seed(random_states[2]);
         reward_lever_random.set_seed(random_states[3]);
-        if(version == run_snapshot_version)
+        if(version == run_snapshot_version_v2 || version == run_snapshot_version_v3 ||
+           version == run_snapshot_version)
         {
             archive.value(imported_chest_frame);
             archive.value(imported_chest_target_frame);
@@ -6018,6 +7250,24 @@ int main()
             imported_chest_target_frame = 0;
             imported_chest_animation_timer = 0;
         }
+        if(version == run_snapshot_version_v3 || version == run_snapshot_version)
+            archive.value(medikit_count);
+        else
+            medikit_count = 0;
+        if(version == run_snapshot_version)
+            archive.value(campfire_rewards);
+        else
+        {
+            for(CampfireRewardState& reward : campfire_rewards)
+                reward = CampfireRewardState();
+            if(campfire_reward_active)
+            {
+                campfire_rewards[0].active = true;
+                campfire_rewards[0].type = campfire_reward_type;
+                campfire_rewards[0].level = campfire_reward_level;
+            }
+            campfire_pending_rewards = 0;
+        }
         return archive.good();
     };
 
@@ -6026,7 +7276,7 @@ int main()
         int rooms = room_manager.room_count();
         if(!room_manager.saved_floor_valid() || piso_actual < 1 || run_rooms_explored < piso_actual ||
            x < -102 || x > 102 || y < -64 || y > 58 || energy <= 0 || energy > energy_capacity ||
-           stamina < 0 || stamina > stamina_capacity_frames || key_count < 0 ||
+           stamina < 0 || stamina > stamina_capacity_frames || key_count < 0 || medikit_count < 0 ||
            carried_ability_count < 0 || carried_ability_count > max_carried_abilities ||
            selected_ability_slot < 0 || selected_ability_slot >= max_carried_abilities ||
            carried_npc_index < -1 || carried_npc_index >= max_npcs ||
@@ -6078,10 +7328,42 @@ int main()
         return true;
     };
 
+    auto refresh_shop_selection = [&]()
+    {
+        passive_shop::refresh(game_save::records().shop);
+        game_save::commit_records();
+    };
+
+    auto reset_adventurer_passives = [&]()
+    {
+        passive_shop::reset_for_death(game_save::records().shop);
+        game_save::records().pending_shop_potions = 0;
+        game_save::records().pending_shop_keys = 0;
+        game_save::records().pending_shop_medikits = 0;
+        apply_adventure_passive_stats();
+        game_save::commit_records();
+    };
+
+    auto apply_pending_shop_consumables = [&]()
+    {
+        const game_save::Records& records = game_save::records();
+        int potion_energy = int(records.pending_shop_potions) * 5;
+        energy += potion_energy;
+        if(energy > energy_capacity)
+            energy = energy_capacity;
+        key_count += records.pending_shop_keys;
+        medikit_count += records.pending_shop_medikits;
+        game_save::records().pending_shop_potions = 0;
+        game_save::records().pending_shop_keys = 0;
+        game_save::records().pending_shop_medikits = 0;
+        apply_adventure_passive_stats();
+    };
+
     auto save_active_game = [&]()
     {
         if(room_manager.is_menu_floor() || energy <= 0 || !loaded_run_valid())
             return false;
+        sync_legacy_campfire_reward();
         game_save::Writer writer;
         bool copied = transfer_run_state(writer);
         BN_ASSERT(copied && writer.size() == run_snapshot_bytes, "Incomplete active save");
@@ -6093,6 +7375,14 @@ int main()
 
     auto start_game = [&]()
     {
+        medikit_pickup_animation_active = false;
+        world_pickup_animation_active = false;
+        ability_pickup_animation_active = false;
+        ability_pickup_animation_sprite.reset();
+        medikit_pickup_animation_timer = 0;
+        medikit_pickup_npc_index = -1;
+        medikit_use_sprite.reset();
+        clear_world_portal();
         bomb_flash_frames = 0;
         clear_placed_bomb();
         mushy_move_timer = 0;
@@ -6120,6 +7410,7 @@ int main()
         {
             return false;
         }
+        has_started_run = true;
         clear_campfire_reward();
         campfire_pending_rewards = 0;
         campfire_skill_reward_granted = false;
@@ -6140,6 +7431,8 @@ int main()
         trapdoor_world_sprite.set_visible(false);
         energy = starting_energy;
         stamina = stamina_capacity_frames;
+        player_stats.spirit = PlayerStats::max_spirit;
+        spirit_frame_remainder = 0;
         stamina_exhaustion_penalty_applied = false;
         stamina_run_attempt_latched = false;
         stamina_blink_timer = 0;
@@ -6170,8 +7463,12 @@ int main()
         campfire_animation_timer = 0;
         campfire.set_tiles(bn::sprite_items::campfire.tiles_item(), campfire_frame);
         key_count = 0;
+        medikit_count = 0;
+        apply_pending_shop_consumables();
         rescued_adventurers = 0;
         update_rescued_count_label();
+        update_medikit_count_label();
+        update_coin_count_label();
         for (bool &room_scored : scored_rooms)
         {
             room_scored = false;
@@ -6305,8 +7602,341 @@ int main()
 
     };
 
+    auto clear_shop_ui = [&]()
+    {
+        shop_item_sprites.clear();
+        shop_price_sprites.clear();
+        shop_name_sprites.clear();
+        shop_status_sprites.clear();
+        shop_help_sprites.clear();
+        shop_adventurer_sprite.reset();
+        shop_coin_counter_sprite.reset();
+        shop_pickup_animation_sprite.reset();
+        shop_purchase_name_timer = 0;
+        shop_pickup_animation_timer = 0;
+        for(int slot = 0; slot < passive_shop::option_count; ++slot)
+            shop_price_blink_timer[slot] = 0;
+        shop_touch_latched = false;
+    };
+
+    auto create_shop_item_sprite = [&](passive_shop::ItemId item, int sprite_x, int sprite_y)
+    {
+        using passive_shop::ItemId;
+        switch(item)
+        {
+        case ItemId::LIGHT_SPARK: return bn::sprite_items::chispa_ligera.create_sprite(sprite_x, sprite_y);
+        case ItemId::DENSE_CORE: return bn::sprite_items::nucleo_denso.create_sprite(sprite_x, sprite_y);
+        case ItemId::CONCENTRATED_ESSENCE: return bn::sprite_items::esencia_concentrada.create_sprite(sprite_x, sprite_y);
+        case ItemId::CADENCE_CRYSTAL: return bn::sprite_items::cristal_de_cadencia.create_sprite(sprite_x, sprite_y);
+        case ItemId::ABUNDANCE_SEAL: return bn::sprite_items::sello_de_abundancia.create_sprite(sprite_x, sprite_y);
+        case ItemId::TWIN_BURST: return bn::sprite_items::descarga_gemela.create_sprite(sprite_x, sprite_y);
+        case ItemId::TRIPLE_BURST: return bn::sprite_items::descarga_trina.create_sprite(sprite_x, sprite_y);
+        case ItemId::ARCANE_HEART: return bn::sprite_items::corazon_arcano.create_sprite(sprite_x, sprite_y);
+        case ItemId::ENCHANTED_WIND: return bn::sprite_items::viento_encantado.create_sprite(sprite_x, sprite_y);
+        case ItemId::QUICK_CHANNELER: return bn::sprite_items::canalizador_rapido.create_sprite(sprite_x, sprite_y);
+        case ItemId::GREATER_ORB: return bn::sprite_items::orbe_mayor.create_sprite(sprite_x, sprite_y);
+        case ItemId::LESSER_ORB: return bn::sprite_items::orbe_menor.create_sprite(sprite_x, sprite_y);
+        case ItemId::MANA_RESERVE: return bn::sprite_items::reserva_de_mana.create_sprite(sprite_x, sprite_y);
+        case ItemId::REPETITION_TOTEM: return bn::sprite_items::totem_de_repeticion.create_sprite(sprite_x, sprite_y);
+        case ItemId::LIGHT_STAFF: return bn::sprite_items::baston_liviano.create_sprite(sprite_x, sprite_y);
+        case ItemId::HEAVY_STAFF: return bn::sprite_items::baston_pesado.create_sprite(sprite_x, sprite_y);
+        case ItemId::SWIFTNESS_FRAGMENT: return bn::sprite_items::fragmento_de_reapidez.create_sprite(sprite_x, sprite_y);
+        case ItemId::MULTIPLICATION_FRAGMENT: return bn::sprite_items::fragmento_de_multiplicacion.create_sprite(sprite_x, sprite_y);
+        case ItemId::POWER_SEAL: return bn::sprite_items::sello_de_potencia.create_sprite(sprite_x, sprite_y);
+        case ItemId::GREAT_ARCANE_CORE: return bn::sprite_items::gran_nucleo_arcano.create_sprite(sprite_x, sprite_y);
+        case ItemId::CRUZ_DIVINA: return bn::sprite_items::cruz_divina.create_sprite(sprite_x, sprite_y);
+        case ItemId::POTION: return bn::sprite_items::posion_energy_16x16_animate.create_sprite(
+            sprite_x, sprite_y, potion_animation_frame);
+        case ItemId::KEY: return bn::sprite_items::key.create_sprite(sprite_x, sprite_y);
+        default: return bn::sprite_items::medikit.create_sprite(sprite_x, sprite_y);
+        }
+    };
+
+    auto refresh_shop_ui = [&]()
+    {
+        passive_shop::State& shop = game_save::records().shop;
+        if(!shop.initialized)
+        {
+            shop.random_state = selected_seed ^ 0x5A0F51A7u;
+            passive_shop::refresh(shop);
+            game_save::commit_records();
+        }
+        shop_item_sprites.clear();
+        shop_price_sprites.clear();
+        shop_status_sprites.clear();
+        shop_help_sprites.clear();
+        for(int slot = 0; slot < passive_shop::option_count; ++slot)
+        {
+            const imported_room::Object* item_marker = current_imported_room().by_asset(
+                imported_room::Asset::LEVER, slot);
+            const imported_room::Object* price_marker = current_imported_room().by_asset(
+                imported_room::Asset::MUSHY, slot);
+            int item_x = item_marker ? item_marker->x : -72 + slot * 48;
+            int item_y = item_marker ? item_marker->y : 0;
+            int price_x = price_marker ? price_marker->x : item_x;
+            int price_y = price_marker ? price_marker->y : item_y - 18;
+            bn::sprite_ptr sprite = create_shop_item_sprite(shop.options[slot], item_x, item_y);
+            sprite.set_bg_priority(0);
+            sprite.set_z_order(-14);
+            shop_item_sprites.push_back(bn::move(sprite));
+            char price_label[8];
+            create_value_label("x", passive_shop::price(shop.options[slot]), price_label);
+            shop_price_start[slot] = shop_price_sprites.size();
+            title_text_generator.generate(price_x, price_y, price_label, shop_price_sprites);
+            shop_price_count[slot] = shop_price_sprites.size() - shop_price_start[slot];
+            shop_price_blink_timer[slot] = 0;
+        }
+
+        const imported_room::Object* coin_marker = current_imported_room().by_asset(
+            imported_room::Asset::PLANT, 0);
+        int coin_x = coin_marker ? coin_marker->x : -104;
+        int coin_y = coin_marker ? coin_marker->y : -64;
+        shop_coin_counter_sprite.emplace(bn::sprite_items::coin.create_sprite(coin_x, coin_y));
+        shop_coin_counter_sprite->set_bg_priority(0);
+        shop_coin_counter_sprite->set_z_order(-14);
+        char coins_label[12];
+        create_value_label("x", game_save::records().coins, coins_label);
+        title_text_generator.generate(coin_x + 22, coin_y, coins_label, shop_status_sprites);
+
+        if(!shop_adventurer_sprite.has_value())
+        {
+            const imported_room::Object* npc_marker = current_imported_room().by_asset(
+                imported_room::Asset::PLAYER, 0);
+            int npc_x = npc_marker ? npc_marker->x : 88;
+            int npc_y = npc_marker ? npc_marker->y : -54;
+            int variant = int((shop.random_state ^ selected_seed) % 4);
+            if(variant == 0)
+                shop_adventurer_sprite.emplace(bn::sprite_items::aventure_1.create_sprite(npc_x, npc_y));
+            else if(variant == 1)
+                shop_adventurer_sprite.emplace(bn::sprite_items::aventure_2.create_sprite(npc_x, npc_y));
+            else if(variant == 2)
+                shop_adventurer_sprite.emplace(bn::sprite_items::aventure_3.create_sprite(npc_x, npc_y));
+            else
+                shop_adventurer_sprite.emplace(bn::sprite_items::aventure_4.create_sprite(npc_x, npc_y));
+            shop_adventurer_sprite->set_bg_priority(1);
+            shop_adventurer_sprite->set_z_order(-2);
+        }
+    };
+
+    auto start_shop_purchase_name = [&](passive_shop::ItemId item)
+    {
+        shop_name_sprites.clear();
+        shop_purchase_name_x = 150;
+        shop_purchase_name_timer = 160;
+        title_text_generator.generate(shop_purchase_name_x, 50, passive_shop::name(item),
+                                      shop_name_sprites);
+    };
+
+    auto start_shop_pickup_animation = [&](passive_shop::ItemId item, int slot)
+    {
+        const imported_room::Object* item_marker = current_imported_room().by_asset(
+            imported_room::Asset::LEVER, slot);
+        int item_x = item_marker ? item_marker->x : -72 + slot * 48;
+        int item_y = item_marker ? item_marker->y : 0;
+        shop_pickup_animation_sprite.emplace(create_shop_item_sprite(item, item_x, item_y));
+        shop_pickup_animation_sprite->set_bg_priority(0);
+        shop_pickup_animation_sprite->set_z_order(-12);
+        shop_touch_animation_slot = slot;
+        shop_pickup_animation_timer = 0;
+    };
+
+    auto update_shop_pickup_animation = [&]()
+    {
+        if(!shop_pickup_animation_sprite.has_value())
+            return;
+        constexpr int animation_duration = 40;
+        constexpr int blink_interval = 4;
+        ++shop_pickup_animation_timer;
+        int rise = shop_pickup_animation_timer / blink_interval;
+        if(rise > 8)
+            rise = 8;
+        const imported_room::Object* marker = current_imported_room().by_asset(
+            imported_room::Asset::LEVER, shop_touch_animation_slot);
+        int item_x = marker ? marker->x : -72 + shop_touch_animation_slot * 48;
+        int item_y = marker ? marker->y : 0;
+        shop_pickup_animation_sprite->set_position(item_x, item_y - rise);
+        shop_pickup_animation_sprite->set_visible(
+            (shop_pickup_animation_timer / blink_interval) % 2 == 0);
+        if(shop_pickup_animation_timer >= animation_duration)
+        {
+            shop_pickup_animation_sprite.reset();
+            shop_pickup_animation_timer = 0;
+            if(shop_touch_animation_slot < shop_item_sprites.size())
+                shop_item_sprites[shop_touch_animation_slot].set_visible(true);
+        }
+    };
+
+    auto blink_shop_price = [&](int slot)
+    {
+        shop_price_blink_timer[slot] = 48;
+        for(int offset = 0; offset < shop_price_count[slot]; ++offset)
+            shop_price_sprites[shop_price_start[slot] + offset].set_visible(true);
+    };
+
+    auto update_shop_price_blinks = [&]()
+    {
+        for(int slot = 0; slot < passive_shop::option_count; ++slot)
+        {
+            if(shop_price_blink_timer[slot] <= 0)
+                continue;
+            --shop_price_blink_timer[slot];
+            bool visible = (shop_price_blink_timer[slot] / 4) % 2 == 0;
+            if(shop_price_blink_timer[slot] == 0)
+                visible = true;
+            for(int offset = 0; offset < shop_price_count[slot]; ++offset)
+                shop_price_sprites[shop_price_start[slot] + offset].set_visible(visible);
+        }
+    };
+
+    auto update_shop_purchase_name = [&]()
+    {
+        if(shop_purchase_name_timer <= 0)
+            return;
+        int elapsed = 160 - shop_purchase_name_timer;
+        int target_x = 0;
+        if(elapsed < 20)
+            target_x = 150 - elapsed * 150 / 20;
+        else if(elapsed >= 140)
+            target_x = -(elapsed - 140) * 150 / 20;
+        int delta = target_x - shop_purchase_name_x;
+        for(bn::sprite_ptr& sprite : shop_name_sprites)
+            sprite.set_x(sprite.x() + delta);
+        shop_purchase_name_x = target_x;
+        --shop_purchase_name_timer;
+        if(shop_purchase_name_timer == 0)
+            shop_name_sprites.clear();
+    };
+
+    auto buy_shop_item = [&](int slot)
+    {
+        if(shop_pickup_animation_sprite.has_value())
+            return;
+        passive_shop::State& shop = game_save::records().shop;
+        passive_shop::ItemId selected_item = shop.options[slot];
+        passive_shop::PurchaseResult result = passive_shop::purchase(
+            shop, slot, game_save::records().coins);
+        if(result == passive_shop::PurchaseResult::NOT_ENOUGH_COINS ||
+           result == passive_shop::PurchaseResult::INVALID)
+        {
+            blink_shop_price(slot);
+            bn::sound_items::hit.play();
+            return;
+        }
+        if(result == passive_shop::PurchaseResult::POTION &&
+           game_save::records().pending_shop_potions < 255)
+            ++game_save::records().pending_shop_potions;
+        else if(result == passive_shop::PurchaseResult::KEY &&
+                game_save::records().pending_shop_keys < 255)
+            ++game_save::records().pending_shop_keys;
+        else if(result == passive_shop::PurchaseResult::MEDIKIT &&
+                game_save::records().pending_shop_medikits < 255)
+            ++game_save::records().pending_shop_medikits;
+        apply_adventure_passive_stats();
+        game_save::commit_records();
+        update_coin_count_label();
+        bn::sound_items::move_ui.play();
+        start_shop_pickup_animation(selected_item, slot);
+        start_shop_purchase_name(selected_item);
+        refresh_shop_ui();
+        shop_item_sprites[slot].set_visible(false);
+    };
+
+    auto update_shop_room = [&]()
+    {
+        if(shop_item_sprites.empty())
+            refresh_shop_ui();
+
+        int previous_x = x;
+        int previous_y = y;
+        bool sprinting = bn::keypad::b_held();
+        int accumulated_units = movement_speed_remainder + (sprinting ? 8 : 5);
+        int movement_pixels = accumulated_units / 4;
+        animation_speed = sprinting ? 8 : 16;
+        if(bn::keypad::down_held())
+        {
+            direccion = Direccion::ABAJO;
+            y += movement_pixels;
+        }
+        else if(bn::keypad::up_held())
+        {
+            direccion = Direccion::ARRIBA;
+            y -= movement_pixels;
+        }
+        else if(bn::keypad::left_held())
+        {
+            direccion = Direccion::IZQUIERDA;
+            x -= movement_pixels;
+        }
+        else if(bn::keypad::right_held())
+        {
+            direccion = Direccion::DERECHA;
+            x += movement_pixels;
+        }
+        if(x < -102) x = -102;
+        if(x > 102) x = 102;
+        if(y < -64) y = -64;
+        if(y > 58) y = 58;
+        if(player_position_blocked(x, y))
+        {
+            x = previous_x;
+            y = previous_y;
+        }
+        bool moving = x != previous_x || y != previous_y;
+        if(moving)
+            movement_speed_remainder = accumulated_units % 4;
+        update_player_animation(moving, false);
+        player.set_position(x, y);
+        player.set_visible(true);
+        update_stone_layers();
+
+        int touched_slot = -1;
+        for(int slot = 0; slot < passive_shop::option_count; ++slot)
+        {
+            const imported_room::Object* trigger = current_imported_room().by_asset(
+                imported_room::Asset::SPIKES, slot);
+            if(trigger && x >= trigger->x - 9 && x <= trigger->x + 9 &&
+               y >= trigger->y - 10 && y <= trigger->y + 2)
+            {
+                touched_slot = slot;
+                break;
+            }
+        }
+        if(touched_slot < 0)
+            shop_touch_latched = false;
+        else if(!shop_touch_latched)
+        {
+            shop_touch_latched = true;
+            buy_shop_item(touched_slot);
+        }
+
+        update_shop_purchase_name();
+        update_shop_pickup_animation();
+        update_shop_price_blinks();
+        if(room_manager.door_is_open(RoomDirection::RIGHT) &&
+           room_manager.touching_door(x, y, RoomDirection::RIGHT))
+        {
+            clear_shop_ui();
+            bn::sound_items::enter_door.play();
+            fade_room_transition(true);
+            int spawn_x = x;
+            int spawn_y = y;
+            if(room_manager.try_transition(x, y, spawn_x, spawn_y))
+            {
+                x = spawn_x;
+                y = spawn_y;
+                update_room_background();
+                update_room_obstacles();
+                update_stone_layers();
+                update_door_sprites();
+                player.set_position(x, y);
+            }
+            fade_room_transition(false);
+        }
+    };
+
     auto enter_menu_floor = [&]()
     {
+        clear_shop_ui();
         clear_inventory_screen();
         clear_options_menu();
         clear_placed_bomb();
@@ -6359,6 +7989,8 @@ int main()
         special_key_sprite.set_visible(false);
         energy_potion_sprite.set_visible(false);
         sprint_potion_sprite.set_visible(false);
+        medikit_sprite.set_visible(false);
+        coin_sprite.set_visible(false);
         campfire_pending_rewards = 0;
         campfire_use_frames_remaining = 0;
         ability_flash_frames_remaining = 0;
@@ -6377,9 +8009,7 @@ int main()
         piso_actual = 1;
         energy = starting_energy;
         stamina = stamina_capacity_frames;
-        stamina_bar_enabled = false;
-        energy_bar_enabled = false;
-        release_hud_sprites();
+        hide_hud_for_menu();
         set_main_title_visible(false);
         title_name_sprites.clear();
         title_credit_sprites.clear();
@@ -6392,6 +8022,7 @@ int main()
         inventory_rescued_icon.set_visible(false);
         refresh_main_hud_visibility();
 
+        clear_world_portal();
         room_manager.generate_menu_floor();
         x = inicio_x;
         y = inicio_y;
@@ -6469,6 +8100,7 @@ int main()
                 fade_room_transition(true);
                 int spawn_x = x;
                 int spawn_y = y;
+                bool was_menu_demo_room = is_menu_demo_room();
                 if(room_manager.try_transition(x, y, spawn_x, spawn_y))
                 {
                     x = spawn_x;
@@ -6477,15 +8109,56 @@ int main()
                     update_room_obstacles();
                     update_stone_layers();
                     update_door_sprites();
-                    stairs.set_visible(room_manager.current_room_id() == room_manager.stairs_room_id());
+                    if(is_menu_demo_room())
+                    {
+                        setup_menu_demo_items();
+                        player_stats.energy = starting_energy;
+                        stamina = stamina_capacity_frames;
+                        player_stats.spirit = PlayerStats::max_spirit;
+                        spirit_frame_remainder = 0;
+                        stamina_bar_enabled = true;
+                        energy_bar_enabled = true;
+                        create_hud_sprites();
+                        update_stamina_bar_fill(stamina);
+                        update_energy_bar_fill(energy);
+                        refresh_main_hud_visibility();
+                    }
+                    else if(was_menu_demo_room)
+                    {
+                        carried_ability_count = 0;
+                        selected_ability_slot = 0;
+                        active_ability = ActiveAbility::DASH;
+                        replacing_ability = false;
+                        update_active_ability_icon();
+                        hide_hud_for_menu();
+                    }
+                    bool custom_menu_stairs = imported_room::contains(room_manager.current_template()) &&
+                        imported_room::get(room_manager.current_template()).menu_portal_room;
+                    stairs.set_visible(room_manager.current_room_id() == room_manager.stairs_room_id() && !custom_menu_stairs);
                     player.set_position(x, y);
                 }
                 fade_room_transition(false);
                 break;
             }
         }
-        return room_manager.current_room_id() == room_manager.stairs_room_id() &&
-            x >= -10 && x <= 10 && y >= -18 && y <= 2;
+        if(room_manager.current_room_id() != room_manager.stairs_room_id())
+            return 0;
+        if(imported_room::contains(room_manager.current_template()) &&
+           imported_room::get(room_manager.current_template()).menu_portal_room)
+        {
+            const imported_room::Object* new_run_stairs = current_imported_room().by_asset(
+                imported_room::Asset::STAIRS, 0);
+            const imported_room::Object* resume_portal = current_imported_room().by_asset(
+                imported_room::Asset::PORTAL, 0);
+            if(new_run_stairs && x >= new_run_stairs->x - 10 && x <= new_run_stairs->x + 10 &&
+               y >= new_run_stairs->y - 10 && y <= new_run_stairs->y + 10)
+                return 1;
+            if(game_save::has_run() && resume_portal && x >= resume_portal->x - 10 && x <= resume_portal->x + 10 &&
+               y >= resume_portal->y - 10 && y <= resume_portal->y + 10)
+                return 2;
+            return 0;
+        }
+        return x >= -10 && x <= 10 && y >= -18 && y <= 2 ? 1 : 0;
     };
 
     auto create_saved_reward_sprite = [&](RoomItemType type, int sprite_x, int sprite_y)
@@ -6516,7 +8189,10 @@ int main()
     auto restore_game = [&]()
     {
         if(!game_save::has_run() ||
-           (game_save::run_size() != run_snapshot_bytes && game_save::run_size() != run_snapshot_bytes_v1))
+           (game_save::run_size() != run_snapshot_bytes &&
+            game_save::run_size() != run_snapshot_bytes_v3 &&
+            game_save::run_size() != run_snapshot_bytes_v2 &&
+            game_save::run_size() != run_snapshot_bytes_v1))
         {
             game_save::clear_run();
             return false;
@@ -6545,6 +8221,8 @@ int main()
             return false;
         }
         selected_seed = run_seed;
+        apply_pending_shop_consumables();
+        has_started_run = true;
         pantalla_actual = Pantalla::MAPA;
         game_started = true;
         game_over = false;
@@ -6625,10 +8303,14 @@ int main()
                     create_saved_reward_sprite(reward.type, reward.x, reward.y));
             }
         }
-        campfire_reward_sprite.reset();
-        if(campfire_reward_active)
-            campfire_reward_sprite.emplace(create_saved_reward_sprite(campfire_reward_type,
-                campfire_reward_x, campfire_reward_y));
+        for(int slot = 0; slot < max_campfire_rewards; ++slot)
+        {
+            campfire_reward_sprites[slot].reset();
+            const CampfireRewardState& reward = campfire_rewards[slot];
+            if(reward.active)
+                campfire_reward_sprites[slot].emplace(
+                    create_saved_reward_sprite(reward.type, reward.x, reward.y));
+        }
         placed_bomb_sprite.reset();
         if(pending_bomb_frames > 0)
         {
@@ -6661,12 +8343,15 @@ int main()
         update_map_seed_label();
         update_key_count_label();
         update_rescued_count_label();
+        update_medikit_count_label();
+        update_coin_count_label();
         update_energy_bar_fill(energy);
         update_stamina_bar_fill(stamina);
         room_name_sprites.clear();
         room_name_generator.generate(112, -68, room_display_name(current_room), room_name_sprites);
         update_map();
         refresh_main_hud_visibility();
+        save_active_game();
         return true;
     };
 
@@ -6749,6 +8434,65 @@ int main()
         enter_menu_floor();
     };
 
+    auto clear_sprites_for_logo = [&]()
+    {
+        clear_inventory_screen();
+        clear_options_menu();
+        clear_placed_bomb();
+        clear_campfire_reward();
+        clear_world_portal();
+        release_hud_sprites();
+
+        menu_object_sprites.clear();
+        composition_object_sprites.clear();
+        imported_object_sprites.clear();
+        imported_item_sprites.clear();
+        imported_ability_sprites.clear();
+        imported_campfire_sprites.clear();
+        imported_stairs_sprites.clear();
+        imported_portal_sprites.clear();
+        room_door_sprites.clear();
+        stone_sprites.clear();
+        campfire_columns.clear();
+        campfire_libraries.clear();
+        composition_4_boxes.clear();
+        spike_sprites.clear();
+        skeleton_sprites.clear();
+        bat_sprites.clear();
+        mushy_sprites.clear();
+        plant_sprites.clear();
+        plant_bullet_sprites.clear();
+        for(bn::sprite_ptr &sprite : npc_sprites) sprite.set_visible(false);
+        reward_room_reward_sprites.clear();
+        reward_lever_sprites.clear();
+        map_room_sprites.clear();
+        map_link_sprites.clear();
+        map_seed_sprites.clear();
+        room_name_sprites.clear();
+        key_count_text_sprites.clear();
+        rescued_count_text_sprites.clear();
+        floor_text_sprites.clear();
+        menu_text_sprites.clear();
+        game_over_text_sprites.clear();
+        floor_transition_text_sprites.clear();
+
+        player.set_visible(false);
+        ability_panel.set_visible(false);
+        ability_icon.set_visible(false);
+        trapdoor_world_sprite.set_visible(false);
+        familiar_world_sprite.set_visible(false);
+        inventory_rescued_icon.set_visible(false);
+        floor_key_sprite.set_visible(false);
+        special_key_sprite.set_visible(false);
+        energy_potion_sprite.set_visible(false);
+        sprint_potion_sprite.set_visible(false);
+        medikit_sprite.set_visible(false);
+        coin_sprite.set_visible(false);
+        stairs.set_visible(false);
+        campfire.set_visible(false);
+        for(bn::sprite_ptr &sprite : stamina_label_sprites) sprite.set_visible(false);
+        for(bn::sprite_ptr &sprite : energy_bar_label_sprites) sprite.set_visible(false);
+    };
     auto show_game_over = [&]()
     {
         clear_inventory_screen();
@@ -6759,6 +8503,7 @@ int main()
         campfire_pending_rewards = 0;
         game_over = true;
         ++game_save::records().deaths;
+        reset_adventurer_passives();
         game_save::clear_run();
         select_new_seed();
         map_seed_sprites.clear();
@@ -7011,6 +8756,28 @@ int main()
         save_active_game();
     };
 
+    auto deliver_active_adventurer = [&](int destination_room_id)
+    {
+        if(carried_npc_index < 0)
+            return false;
+        NpcState& npc = npcs[carried_npc_index];
+        npc.delivered = true;
+        npc.room_id = destination_room_id;
+        carried_npc_index = -1;
+        ++rescued_adventurers;
+        ++game_save::records().adventurers_saved;
+        update_rescued_count_label();
+        spawn_campfire_reward();
+        energy += 3;
+        if(energy > energy_capacity)
+            energy = energy_capacity;
+        update_energy_label();
+        start_energy_recovery_flash();
+        refresh_shop_selection();
+        open_campfire_exit_portal();
+        return true;
+    };
+
     auto teleport_through_trapdoor = [&](int destination_room_id, int destination_x, int destination_y)
     {
         int previous_room_id = room_manager.current_room_id();
@@ -7054,24 +8821,8 @@ int main()
             reset_follow_history_at_player();
         }
 
-        if (room_manager.current_template() == RoomTemplateId::SPECIAL && carried_npc_index >= 0)
-        {
-            NpcState &npc = npcs[carried_npc_index];
-            npc.delivered = true;
-            npc.room_id = destination_room;
-            carried_npc_index = -1;
-            ++rescued_adventurers;
-            ++game_save::records().adventurers_saved;
-            update_rescued_count_label();
-            spawn_campfire_reward();
-            energy += 3;
-            if (energy > energy_capacity)
-            {
-                energy = energy_capacity;
-            }
-            update_energy_label();
-            start_energy_recovery_flash();
-        }
+        if(room_manager.current_template() == RoomTemplateId::SPECIAL)
+            deliver_active_adventurer(destination_room);
 
         update_room_background();
         update_room_obstacles();
@@ -7113,8 +8864,12 @@ int main()
     special_key_sprite.set_bg_priority(1);
     energy_potion_sprite.set_bg_priority(1);
     sprint_potion_sprite.set_bg_priority(1);
+    medikit_sprite.set_bg_priority(1);
+    coin_sprite.set_bg_priority(1);
     energy_potion_sprite.set_z_order(-2);
     sprint_potion_sprite.set_z_order(-2);
+    medikit_sprite.set_z_order(-2);
+    coin_sprite.set_z_order(-2);
 
     land.set_visible(true);
     player.set_visible(false);
@@ -7162,15 +8917,59 @@ int main()
     }
     while (true)
     {
-        // El piso de menu solo permite caminar, cambiar de cuarto y usar las escaleras.
-        if(room_manager.is_menu_floor())
+        if(world_portal_sprite.has_value()) world_portal_sprite->set_visible(room_manager.current_room_id() == world_portal_room_id);
+        if(++portal_animation_timer >= 8)
         {
-            if(update_menu_floor())
+            portal_animation_timer = 0;
+            portal_animation_frame = (portal_animation_frame + 1) % 3;
+            if(world_portal_sprite.has_value())
+                world_portal_sprite->set_tiles(bn::sprite_items::portal_16x16_animate.tiles_item(), portal_animation_frame);
+            if(inventory_portal_icon.has_value())
+                inventory_portal_icon->set_tiles(bn::sprite_items::portal_16x16_animate.tiles_item(), portal_animation_frame);
+            for(bn::sprite_ptr& sprite : imported_portal_sprites)
+                sprite.set_tiles(bn::sprite_items::portal_16x16_animate.tiles_item(), portal_animation_frame);
+        }
+        if(room_manager.is_menu_floor() && !is_menu_demo_room() && hud_sprites_allocated)
+            hide_hud_for_menu();
+        if(is_menu_shop_room())
+        {
+            update_shop_room();
+            bn::core::update();
+            continue;
+        }
+        // El piso de menu solo permite caminar, cambiar de cuarto y usar las escaleras.
+        if(room_manager.is_menu_floor() && !is_menu_demo_room())
+        {
+            int menu_action = update_menu_floor();
+            if(menu_action)
             {
                 bn::sound_items::stairs.play();
                 fade_room_transition(true);
                 create_hud_sprites();
-                if(game_save::has_run() ? restore_game() : start_game())
+                bool resumed = menu_action == 2 && game_save::has_run();
+                if(!resumed)
+                {
+                    unsigned previous_run_seed = has_started_run ? run_seed : 0;
+                    if(game_save::has_run())
+                    {
+                        // Elegir una mazmorra nueva abandona al aventurero activo.
+                        // Si aun no habia partida, conserva las compras hechas
+                        // previamente en la tienda para el primer aventurero.
+                        reset_adventurer_passives();
+                        const int seed_offset = int(sizeof(unsigned) + sizeof(RoomManager));
+                        if(game_save::run_size() >= seed_offset + int(sizeof(unsigned)))
+                            __builtin_memcpy(&previous_run_seed, game_save::run_buffer() + seed_offset,
+                                             sizeof(previous_run_seed));
+                        game_save::clear_run();
+                    }
+                    if(previous_run_seed)
+                    {
+                        select_new_seed();
+                        while(selected_seed == previous_run_seed)
+                            select_new_seed();
+                    }
+                }
+                if(resumed ? restore_game() : start_game())
                 {
                     pantalla_actual = Pantalla::MAPA;
                     update_floor_item_visibility();
@@ -7188,7 +8987,11 @@ int main()
 
         trapdoor_transitioned_this_frame = false;
         bool campfire_effect_active_this_frame = campfire_use_frames_remaining > 0;
-        if (campfire_effect_active_this_frame)
+        if(world_pickup_animation_active)
+        {
+            dash_active = false;
+        }
+        else if (campfire_effect_active_this_frame)
         {
             int elapsed_frames = campfire_use_duration_frames - campfire_use_frames_remaining;
             bn::blending::set_white_fade_color();
@@ -7378,6 +9181,7 @@ int main()
                 else if (options_selection == 1)
                 {
                     select_new_seed();
+                    reset_adventurer_passives();
 
                     close_options_menu();
                     create_hud_sprites();
@@ -7394,7 +9198,7 @@ int main()
                         bn::core::update();
                     }
                 }
-                else if(save_active_game())
+                else if(options_selection == 2)
                 {
                     close_options_menu();
                     for (int step = 1; step <= 12; ++step)
@@ -7402,7 +9206,12 @@ int main()
                         set_start_transition_darkness(step / 12.0);
                         bn::core::update();
                     }
+                    reset_adventurer_passives();
+                    game_save::clear_run();
                     return_to_title();
+                    clear_sprites_for_logo();
+                    show_logo_screen();
+                    enter_menu_floor();
                     for (int step = 11; step >= 0; --step)
                     {
                         set_start_transition_darkness(step / 12.0);
@@ -7420,36 +9229,40 @@ int main()
             if (ability_data_open)
             {
                 if (bn::keypad::b_pressed() || bn::keypad::a_pressed() ||
-                    bn::keypad::r_pressed() || bn::keypad::select_pressed())
+                    bn::keypad::l_pressed() || bn::keypad::r_pressed() ||
+                    bn::keypad::select_pressed())
                 {
+                    int data_return_slot = inventory_selected_ability_slot;
+                    bool return_to_world = ability_data_return_to_world;
                     fade_screen_to_black();
                     clear_ability_data_screen();
-                    inventory_open = true;
-                    create_inventory_screen();
+                    ability_data_return_to_world = false;
+                    if(return_to_world)
+                    {
+                        inventory_open = false;
+                        replacing_ability = false;
+                        ui_abierta = false;
+                        pantalla_actual = Pantalla::MAPA;
+                        create_hud_sprites();
+                        restore_world_item_visibility();
+                        update_map();
+                    }
+                    else
+                    {
+                        inventory_open = true;
+                        ui_abierta = false;
+                        create_inventory_screen();
+                        if(data_return_slot >= 0 && data_return_slot < carried_ability_count)
+                        {
+                            inventory_selected_ability_slot = data_return_slot;
+                            inventory_portal_selected = false;
+                            update_inventory_ability_selection();
+                        }
+                    }
                     refresh_main_hud_visibility();
                     set_complete_screen_blackness(1);
                     fade_screen_from_black();
                     bn::sound_items::move_ui.play();
-                }
-                else if (bn::keypad::l_pressed())
-                {
-                    fade_screen_to_black();
-                    clear_ability_data_screen();
-                    inventory_open = false;
-                    ui_abierta = true;
-                    pantalla_actual = Pantalla::MAPA;
-                    map_bg.emplace(bn::regular_bg_items::mapback.create_bg(0, 0));
-                    map_bg->set_priority(0);
-                    map_current_blink_timer = 0;
-                    map_current_blink_toggles_remaining = 6;
-                    map_current_marker_hidden = false;
-                    release_hud_sprites();
-                    bn::sound_items::move_ui.play();
-                    update_overlay_title("MAPA", true);
-                    update_map();
-                    refresh_main_hud_visibility();
-                    set_complete_screen_blackness(1);
-                    fade_screen_from_black();
                 }
 
                 bn::core::update();
@@ -7482,60 +9295,85 @@ int main()
                     }
                 }
             }
-            if (carried_ability_count > 0 && bn::keypad::left_pressed())
+            update_inventory_active_ability_blink();
+            int selectable_inventory_items = carried_ability_count +
+                (inventory_portal_frame.has_value() ? 1 : 0);
+            if(selectable_inventory_items > 0 &&
+               (bn::keypad::left_pressed() || bn::keypad::right_pressed()))
             {
-                selected_ability_slot = (selected_ability_slot + carried_ability_count - 1) % carried_ability_count;
-                active_ability = carried_abilities[selected_ability_slot].ability;
-                update_active_ability_icon();
+                int current_selection = inventory_portal_selected ? 0 :
+                    inventory_selected_ability_slot + (inventory_portal_frame.has_value() ? 1 : 0);
+                int next_selection = current_selection + (bn::keypad::right_pressed() ? 1 : -1);
+                if(next_selection < 0)
+                    next_selection = selectable_inventory_items - 1;
+                else if(next_selection >= selectable_inventory_items)
+                    next_selection = 0;
+                inventory_portal_selected = inventory_portal_frame.has_value() && next_selection == 0;
+                if(!inventory_portal_selected && replacing_ability)
+                {
+                    inventory_selected_ability_slot = next_selection -
+                        (inventory_portal_frame.has_value() ? 1 : 0);
+                }
+                else if(!inventory_portal_selected)
+                {
+                    inventory_selected_ability_slot = next_selection -
+                        (inventory_portal_frame.has_value() ? 1 : 0);
+                }
+                else
+                {
+                    ability_icon_blink_toggles_remaining = 0;
+                    ability_icon_blink_hidden = false;
+                }
                 update_inventory_ability_selection();
-                start_ability_icon_blink();
                 for (bn::sprite_ptr &sprite : inventory_ability_frames) sprite.set_visible(true);
                 for (bn::sprite_ptr &sprite : inventory_ability_icons) sprite.set_visible(true);
                 for (bn::sprite_ptr &sprite : inventory_ability_level_sprites) sprite.set_visible(true);
                 bn::sound_items::move_ui.play();
             }
-            else if (carried_ability_count > 0 && bn::keypad::right_pressed())
-            {
-                selected_ability_slot = (selected_ability_slot + 1) % carried_ability_count;
-                active_ability = carried_abilities[selected_ability_slot].ability;
-                update_active_ability_icon();
-                update_inventory_ability_selection();
-                start_ability_icon_blink();
-                for (bn::sprite_ptr &sprite : inventory_ability_frames) sprite.set_visible(true);
-                for (bn::sprite_ptr &sprite : inventory_ability_icons) sprite.set_visible(true);
-                for (bn::sprite_ptr &sprite : inventory_ability_level_sprites) sprite.set_visible(true);
-                bn::sound_items::move_ui.play();
-            }
-            else if (carried_ability_count > 0 && bn::keypad::select_pressed())
+            else if (!inventory_portal_selected && carried_ability_count > 0 && bn::keypad::select_pressed())
             {
                 fade_screen_to_black();
+                ability_data_return_to_world = false;
                 create_ability_data_screen();
                 set_complete_screen_blackness(1);
                 fade_screen_from_black();
                 bn::sound_items::move_ui.play();
             }
-            else if (!replacing_ability && bn::keypad::l_pressed())
+            else if(!replacing_ability && inventory_portal_selected && bn::keypad::a_pressed())
             {
+                if(deploy_world_portal())
+                {
+                    fade_screen_to_black();
+                    inventory_open = false;
+                    clear_inventory_screen();
+                    create_hud_sprites();
+                    refresh_main_hud_visibility();
+                    bn::sound_items::move_ui.play();
+                    set_complete_screen_blackness(1);
+                    fade_screen_from_black();
+                }
+            }
+            else if(!replacing_ability && bn::keypad::a_pressed())
+            {
+                if(carried_ability_count > 0)
+                {
+                    selected_ability_slot = inventory_selected_ability_slot;
+                    active_ability = carried_abilities[selected_ability_slot].ability;
+                    update_active_ability_icon();
+                }
                 fade_screen_to_black();
                 inventory_open = false;
                 clear_inventory_screen();
-                ui_abierta = true;
-                pantalla_actual = Pantalla::MAPA;
-                map_bg.emplace(bn::regular_bg_items::mapback.create_bg(0, 0));
-                map_bg->set_priority(0);
-                map_current_blink_timer = 0;
-                map_current_blink_toggles_remaining = 6;
-                map_current_marker_hidden = false;
-                release_hud_sprites();
-                bn::sound_items::move_ui.play();
-                update_overlay_title("MAPA", true);
-                update_map();
+                create_hud_sprites();
+                restore_world_item_visibility();
                 refresh_main_hud_visibility();
+                bn::sound_items::move_ui.play();
                 set_complete_screen_blackness(1);
                 fade_screen_from_black();
             }
             else if (replacing_ability && bn::keypad::a_pressed() && carried_ability_count == max_carried_abilities)
             {
+                selected_ability_slot = inventory_selected_ability_slot;
                 RoomItemType outgoing_type = static_cast<RoomItemType>(
                     int(RoomItemType::ABILITY_DASH) + int(carried_abilities[selected_ability_slot].ability));
                 int outgoing_level = carried_abilities[selected_ability_slot].level;
@@ -7572,18 +9410,21 @@ int main()
                 }
                 else
                 {
-                    remove_room_item(room_manager.current_room_id(), campfire_reward_type,
-                                     campfire_reward_x, campfire_reward_y);
-                    room_manager.add_item(room_manager.current_room_id(), outgoing_type,
-                                          campfire_reward_x, campfire_reward_y, outgoing_level);
-                    campfire_reward_type = outgoing_type;
-                    campfire_reward_level = outgoing_level;
-                    move_player_outside_pickup(campfire_reward_x, campfire_reward_y);
-                    if(campfire_reward_sprite.has_value())
+                    int slot = campfire_reward_replacement_slot;
+                    if(slot >= 0 && slot < max_campfire_rewards && campfire_rewards[slot].active)
                     {
-                        set_ability_icon(*campfire_reward_sprite,
-                                         carried_abilities[selected_ability_slot].ability);
+                        CampfireRewardState& reward = campfire_rewards[slot];
+                        remove_room_item(room_manager.current_room_id(), reward.type,
+                                         reward.x, reward.y);
+                        reward.type = outgoing_type;
+                        reward.level = outgoing_level;
+                        room_manager.add_item(room_manager.current_room_id(), reward.type,
+                                              reward.x, reward.y, reward.level);
+                        move_player_outside_pickup(reward.x, reward.y);
+                        create_campfire_reward_sprite(slot);
+                        sync_legacy_campfire_reward();
                     }
+                    campfire_reward_replacement_slot = -1;
                 }
                 carried_abilities[selected_ability_slot] = {pending_ability, pending_ability_level};
                 active_ability = pending_ability;
@@ -7600,21 +9441,36 @@ int main()
                 update_map();
                 pantalla_actual = Pantalla::INVENTARIO;
                 fade_screen_to_black();
+                ability_data_return_to_world = true;
                 create_ability_data_screen();
                 set_complete_screen_blackness(1);
                 fade_screen_from_black();
             }
             else if (replacing_ability && bn::keypad::b_pressed())
             {
+                if(reward_room_replacement_index >= 0)
+                    reward_room_ability_rejected_until_leave = true;
                 replacing_ability = false;
+                world_pickup_animation_active = false;
+                ability_pickup_animation_active = false;
+                ability_pickup_animation_timer = 0;
+                ability_pickup_animation_sprite.reset();
+                ability_pickup_requires_replacement = false;
                 if(reward_room_replacement_index == -2)
+                {
                     for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
                         if(x >= point.x - 10 && x <= point.x + 10 &&
                            y >= point.y - 12 && y <= point.y + 12)
                         {
+                            RoomItemType incoming_type = static_cast<RoomItemType>(
+                                int(RoomItemType::ABILITY_DASH) + int(pending_ability));
+                            room_manager.add_item(room_manager.current_room_id(), incoming_type,
+                                                  point.x, point.y, pending_ability_level);
                             move_player_outside_pickup(point.x, point.y);
                             break;
                         }
+                    update_map();
+                }
                 reward_room_replacement_index = -1;
                 inventory_open = false;
                 reject_reward_until_leave = true;
@@ -7623,14 +9479,23 @@ int main()
                 refresh_main_hud_visibility();
             }
             else if (!replacing_ability &&
-                     (bn::keypad::a_pressed() || bn::keypad::r_pressed() || bn::keypad::b_pressed()))
+                     (bn::keypad::r_pressed() || bn::keypad::b_pressed() || bn::keypad::l_pressed()))
             {
                 fade_screen_to_black();
                 bn::sound_items::move_ui.play();
                 inventory_open = false;
+                ability_data_open = false;
+                replacing_ability = false;
+                ui_abierta = false;
+                world_pickup_animation_active = false;
+                ability_pickup_animation_active = false;
+                ability_pickup_animation_timer = 0;
+                ability_pickup_animation_sprite.reset();
+                ability_pickup_requires_replacement = false;
                 pantalla_actual = Pantalla::MAPA;
                 clear_inventory_screen();
                 create_hud_sprites();
+                restore_world_item_visibility();
                 refresh_main_hud_visibility();
                 set_complete_screen_blackness(1);
                 fade_screen_from_black();
@@ -7648,6 +9513,21 @@ int main()
         if (bn::keypad::start_pressed())
         {
             open_options_menu();
+        }
+        else if (ui_abierta && (bn::keypad::a_pressed() || bn::keypad::b_pressed()))
+        {
+            fade_screen_to_black();
+            ui_abierta = false;
+            map_bg.reset();
+            pantalla_actual = Pantalla::MAPA;
+            bn::sound_items::move_ui.play();
+            update_map();
+            create_hud_sprites();
+            set_scene_darkness(0);
+            update_overlay_title("MAPA", false);
+            refresh_main_hud_visibility();
+            set_complete_screen_blackness(1);
+            fade_screen_from_black();
         }
         else if (bn::keypad::l_pressed())
         {
@@ -7737,7 +9617,11 @@ int main()
 
         // Actualiza primero la direccion, para que A pueda usar la flecha pulsada
         // en el mismo cuadro; sin flechas conserva la ultima direccion.
-        if (campfire_effect_active_this_frame)
+        if(world_pickup_animation_active)
+        {
+            dash_active = false;
+        }
+        else if (campfire_effect_active_this_frame)
         {
             dash_active = false;
         }
@@ -7763,7 +9647,7 @@ int main()
         }
 
         bool reward_lever_interaction_consumed = false;
-        if(bn::keypad::a_pressed() && !dash_active)
+        if(!world_pickup_animation_active && bn::keypad::a_pressed() && !dash_active)
         {
             int current_room_id = room_manager.current_room_id();
             for(int index = 0; index < 3; ++index)
@@ -7791,22 +9675,22 @@ int main()
         }
 
         int ability_level = current_ability_level();
-        int dash_stamina_cost = sprint_cost_for_level(ActiveAbility::DASH, ability_level);
-        int stop_time_stamina_cost = sprint_cost_for_level(ActiveAbility::STOP_TIME, ability_level);
-        int trapdoor_stamina_cost = sprint_cost_for_level(ActiveAbility::TRAPDOOR_BACK, ability_level);
-        int reveal_map_stamina_cost = sprint_cost_for_level(ActiveAbility::VIEW_ALL_MAP, ability_level);
-        int master_key_stamina_cost = sprint_cost_for_level(ActiveAbility::MASTER_KEY, ability_level);
-        int familiar_stamina_cost = sprint_cost_for_level(ActiveAbility::FAMILIAR, ability_level);
+        int dash_spirit_cost = spirit_cost_for_level(ActiveAbility::DASH, ability_level);
+        int stop_time_spirit_cost = spirit_cost_for_level(ActiveAbility::STOP_TIME, ability_level);
+        int trapdoor_spirit_cost = spirit_cost_for_level(ActiveAbility::TRAPDOOR_BACK, ability_level);
+        int reveal_map_spirit_cost = spirit_cost_for_level(ActiveAbility::VIEW_ALL_MAP, ability_level);
+        int master_key_spirit_cost = spirit_cost_for_level(ActiveAbility::MASTER_KEY, ability_level);
+        int familiar_spirit_cost = spirit_cost_for_level(ActiveAbility::FAMILIAR, ability_level);
         int bomb_energy_cost = energy_cost_for_level(ActiveAbility::BOMB, ability_level);
-        if (!reward_lever_interaction_consumed && !campfire_effect_active_this_frame && carried_ability_count > 0 &&
+        if (!world_pickup_animation_active && !reward_lever_interaction_consumed &&
+            !campfire_effect_active_this_frame && carried_ability_count > 0 &&
             bn::keypad::a_pressed() && !dash_active)
         {
             if (active_ability == ActiveAbility::DASH)
             {
-                if (stamina >= dash_stamina_cost)
+                if (player_stats.spirit >= dash_spirit_cost)
                 {
-                    stamina -= dash_stamina_cost;
-                    update_stamina_bar_fill(stamina);
+                    set_spirit(player_stats.spirit - dash_spirit_cost);
                     dash_direction = direccion;
                     dash_active = true;
                     movement_speed_remainder = 0;
@@ -7821,10 +9705,9 @@ int main()
             else if (active_ability == ActiveAbility::STOP_TIME &&
                      time_stopped_room_id != room_manager.current_room_id())
             {
-                if (stamina >= stop_time_stamina_cost)
+                if (player_stats.spirit >= stop_time_spirit_cost)
                 {
-                    stamina -= stop_time_stamina_cost;
-                    update_stamina_bar_fill(stamina);
+                    set_spirit(player_stats.spirit - stop_time_spirit_cost);
                     time_stopped_room_id = room_manager.current_room_id();
                     bn::sound_items::dash.play();
                     start_ability_flash();
@@ -7853,10 +9736,9 @@ int main()
                 }
                 else if (current_room_id != home_room_id)
                 {
-                    if (stamina >= trapdoor_stamina_cost)
+                    if (player_stats.spirit >= trapdoor_spirit_cost)
                     {
-                        stamina -= trapdoor_stamina_cost;
-                        update_stamina_bar_fill(stamina);
+                        set_spirit(player_stats.spirit - trapdoor_spirit_cost);
                         trapdoor_room_id = current_room_id;
                         trapdoor_x = x;
                         trapdoor_y = y;
@@ -7873,10 +9755,9 @@ int main()
             }
             else if (active_ability == ActiveAbility::VIEW_ALL_MAP && !floor_map_revealed)
             {
-                if (stamina >= reveal_map_stamina_cost)
+                if (player_stats.spirit >= reveal_map_spirit_cost)
                 {
-                    stamina -= reveal_map_stamina_cost;
-                    update_stamina_bar_fill(stamina);
+                    set_spirit(player_stats.spirit - reveal_map_spirit_cost);
                     floor_map_revealed = true;
                     update_map();
                     bn::sound_items::dash.play();
@@ -7902,7 +9783,7 @@ int main()
                         ++closed_door_count;
                     }
                 }
-                if (closed_door_count > 0 && stamina >= master_key_stamina_cost)
+                if (closed_door_count > 0 && player_stats.spirit >= master_key_spirit_cost)
                 {
                     for (RoomDirection direction : master_key_directions)
                     {
@@ -7913,8 +9794,7 @@ int main()
                             room_manager.set_door_open(room_manager.current_room_id(), direction, true);
                         }
                     }
-                    stamina -= master_key_stamina_cost;
-                    update_stamina_bar_fill(stamina);
+                    set_spirit(player_stats.spirit - master_key_spirit_cost);
                     update_door_sprites();
                     bn::sound_items::open_door.play();
                     start_ability_flash();
@@ -7972,10 +9852,9 @@ int main()
                 }
                 if (nearest_kind >= 0)
                 {
-                    if (stamina >= familiar_stamina_cost)
+                    if (player_stats.spirit >= familiar_spirit_cost)
                     {
-                        stamina -= familiar_stamina_cost;
-                        update_stamina_bar_fill(stamina);
+                        set_spirit(player_stats.spirit - familiar_spirit_cost);
                         familiar_active = true;
                         familiar_frames_remaining = 120;
                         familiar_target_kind = nearest_kind;
@@ -8073,6 +9952,7 @@ int main()
                     remaining_dx * remaining_dx + remaining_dy * remaining_dy <= 4;
                 if (familiar_reached_target || --familiar_frames_remaining <= 0)
                 {
+                    bool familiar_killed_enemy = false;
                     if (familiar_reached_target && familiar_target_kind == 0 &&
                         skeleton_counts[familiar_room_id] > 0 &&
                         familiar_target_index < skeleton_counts[familiar_room_id])
@@ -8103,6 +9983,7 @@ int main()
                         --skeleton_counts[familiar_room_id];
                         --active_skeleton_count;
                         skeleton_sprites[last].set_visible(false);
+                        familiar_killed_enemy = true;
                     }
                     else if (familiar_reached_target && familiar_target_kind == 1 &&
                              bat_counts[familiar_room_id] > 0 &&
@@ -8141,6 +10022,7 @@ int main()
                         --bat_counts[familiar_room_id];
                         --active_bat_count;
                         bat_sprites[last].set_visible(false);
+                        familiar_killed_enemy = true;
                     }
                     else if (familiar_reached_target && familiar_target_kind == 2 &&
                              plant_counts[familiar_room_id] > 0 &&
@@ -8160,10 +10042,27 @@ int main()
                         int fire_timer = plant_fire_animation_timers[familiar_target_index];
                         plant_fire_animation_timers[familiar_target_index] = plant_fire_animation_timers[last];
                         plant_fire_animation_timers[last] = fire_timer;
-                        plant_displayed_frames[familiar_target_index] = -1;
+                        int displayed_frame = plant_displayed_frames[familiar_target_index];
+                        plant_displayed_frames[familiar_target_index] = plant_displayed_frames[last];
+                        plant_displayed_frames[last] = displayed_frame;
                         --plant_counts[familiar_room_id];
                         --active_plant_count;
                         plant_sprites[last].set_visible(false);
+                        if(familiar_target_index < active_plant_count)
+                        {
+                            int moved_position = plant_position_indices[familiar_room_id][familiar_target_index];
+                            plant_sprites[familiar_target_index].set_position(
+                                plant_coordinate(familiar_room_id, moved_position, 0),
+                                plant_coordinate(familiar_room_id, moved_position, 1));
+                            if(plant_displayed_frames[familiar_target_index] >= 0)
+                            {
+                                plant_sprites[familiar_target_index].set_tiles(
+                                    bn::sprite_items::plant_enemy.tiles_item(),
+                                    plant_displayed_frames[familiar_target_index]);
+                            }
+                            plant_sprites[familiar_target_index].set_visible(true);
+                        }
+                        familiar_killed_enemy = true;
                     }
                     else if (familiar_reached_target && familiar_target_kind == 3 &&
                              mushy_counts[familiar_room_id] > 0 &&
@@ -8191,7 +10090,10 @@ int main()
                                 (mushy_walking[familiar_room_id][familiar_target_index] ?
                                     mushy_animation_frame : 0));
                         mushy_sprites[last].set_visible(false);
+                        familiar_killed_enemy = true;
                     }
+                    if(familiar_killed_enemy)
+                        try_drop_enemy_loot(familiar_room_id, familiar_target_x, familiar_target_y);
                     familiar_active = false;
                     familiar_world_sprite.set_visible(false);
                     update_map();
@@ -8199,18 +10101,26 @@ int main()
             }
         }
 
-        bool dashing = dash_active;
+        bool dashing = dash_active && !world_pickup_animation_active;
         bool direction_held = bn::keypad::down_held() || bn::keypad::up_held() ||
                               bn::keypad::left_held() || bn::keypad::right_held();
-        bool sprint_requested = ! campfire_effect_active_this_frame && bn::keypad::b_held() && direction_held;
-        bool sprint_this_frame = !dashing && sprint_requested && stamina > 0;
+        bool sprint_requested = !world_pickup_animation_active &&
+            !campfire_effect_active_this_frame && bn::keypad::b_held() && direction_held;
+        bool sprint_this_frame = !dashing && sprint_requested && player_stats.spirit > 0;
         animation_speed = dashing ? 4 : (sprint_this_frame ? 8 : 16);
-        int movement_units = sprint_this_frame ? 8 : 5;
+        int movement_units = (bn::fixed(sprint_this_frame ? 8 : 5) *
+            player_stats.walk_speed).integer();
+        if(player_stats.walk_speed > 0 && movement_units == 0)
+            movement_units = 1;
         int accumulated_movement_units = movement_speed_remainder + movement_units;
         int frame_movement = accumulated_movement_units / 4;
         int next_movement_speed_remainder = dashing ? 0 : accumulated_movement_units % 4;
 
-        if (campfire_effect_active_this_frame)
+        if(world_pickup_animation_active)
+        {
+            moving = false;
+        }
+        else if (campfire_effect_active_this_frame)
         {
             moving = false;
         }
@@ -8293,9 +10203,15 @@ int main()
         bool stamina_emptied_this_frame = false;
         if (sprint_this_frame && (x != previous_x || y != previous_y))
         {
-            --stamina;
-            stamina_emptied_this_frame = stamina == 0;
-            update_stamina_bar_fill(stamina);
+            ++spirit_frame_remainder;
+            if(spirit_frame_remainder >= spirit_frames_per_point)
+            {
+                spirit_frame_remainder = 0;
+                --player_stats.spirit;
+                stamina_emptied_this_frame = player_stats.spirit == 0;
+                stamina = player_stats.spirit * spirit_frames_per_point;
+                update_stamina_bar_fill(stamina);
+            }
         }
 
         if (stamina_emptied_this_frame && !stamina_exhaustion_penalty_applied)
@@ -8314,7 +10230,7 @@ int main()
         {
             stamina_run_attempt_latched = false;
         }
-        else if (stamina == 0 && !stamina_run_attempt_latched)
+        else if (player_stats.spirit == 0 && !stamina_run_attempt_latched)
         {
             start_stamina_rejection_flash();
             stamina_run_attempt_latched = true;
@@ -8357,7 +10273,7 @@ int main()
             record_follow_movement(previous_x, previous_y, x, y);
         }
 
-        if (carried_npc_index < 0)
+        if (carried_npc_index < 0 && !world_pickup_animation_active && medikit_count > 0)
         {
             for (int index = 0; index < max_npcs; ++index)
             {
@@ -8367,8 +10283,17 @@ int main()
                 if (npc.active && !npc.delivered && npc.room_id == room_manager.current_room_id() &&
                     delta_x > -16 && delta_x < 16 && delta_y > -16 && delta_y < 16)
                 {
-                    carried_npc_index = index;
-                    reset_follow_history();
+                    medikit_pickup_animation_active = true;
+                    world_pickup_animation_active = true;
+                    medikit_pickup_animation_timer = 0;
+                    medikit_pickup_npc_index = index;
+                    --medikit_count;
+                    update_medikit_count_label();
+                    medikit_use_sprite.emplace(
+                        bn::sprite_items::medikit.create_sprite(npc.x, npc.y - 12));
+                    medikit_use_sprite->set_bg_priority(1);
+                    medikit_use_sprite->set_z_order(-4);
+                    medikit_use_sprite->set_visible(true);
                     update_map();
                     break;
                 }
@@ -8402,104 +10327,89 @@ int main()
         update_map();
     }
 
-        bool near_reward_for_block = x >= campfire_reward_x - 10 && x <= campfire_reward_x + 10 &&
-            y >= campfire_reward_y - 12 && y <= campfire_reward_y + 12;
-        if (!near_reward_for_block)
+        bool near_campfire_reward = false;
+        for(const CampfireRewardState& reward : campfire_rewards)
+            if(reward.active && x >= reward.x - 10 && x <= reward.x + 10 &&
+               y >= reward.y - 12 && y <= reward.y + 12)
+            {
+                near_campfire_reward = true;
+                break;
+            }
+        if(!near_campfire_reward)
         {
             reject_reward_until_leave = false;
         }
-        if (campfire_reward_active && !reject_reward_until_leave &&
-            room_manager.current_template() == RoomTemplateId::SPECIAL &&
-            x >= campfire_reward_x - 10 && x <= campfire_reward_x + 10 &&
-            y >= campfire_reward_y - 12 && y <= campfire_reward_y + 12)
+        if(!world_pickup_animation_active && !reject_reward_until_leave &&
+           room_manager.current_template() == RoomTemplateId::SPECIAL)
         {
-            bool is_ability = int(campfire_reward_type) >= int(RoomItemType::ABILITY_DASH);
-            if (is_ability)
+            for(int slot = 0; slot < max_campfire_rewards; ++slot)
             {
-                pending_ability = static_cast<ActiveAbility>(
-                    int(campfire_reward_type) - int(RoomItemType::ABILITY_DASH));
-                pending_ability_level = campfire_reward_level;
-                int existing_slot = find_carried_ability(pending_ability);
-                if (existing_slot >= 0 || carried_ability_count < max_carried_abilities)
+                CampfireRewardState& reward = campfire_rewards[slot];
+                if(!reward.active || x < reward.x - 10 || x > reward.x + 10 ||
+                   y < reward.y - 12 || y > reward.y + 12)
+                    continue;
+                int reward_x = reward.x;
+                int reward_y = reward.y;
+                RoomItemType reward_type = reward.type;
+                int reward_level = reward.level;
+                bool is_ability = int(reward_type) >= int(RoomItemType::ABILITY_DASH);
+                if(is_ability)
                 {
-                    remove_room_item(room_manager.current_room_id(), campfire_reward_type,
-                                     campfire_reward_x, campfire_reward_y);
-                    clear_campfire_reward();
-                    if (existing_slot >= 0)
+                    pending_ability = static_cast<ActiveAbility>(
+                        int(reward_type) - int(RoomItemType::ABILITY_DASH));
+                    pending_ability_level = reward_level;
+                    int existing_slot = find_carried_ability(pending_ability);
+                    campfire_reward_replacement_slot = slot;
+                    reward_room_replacement_index = -1;
+                    if(existing_slot >= 0 || carried_ability_count < max_carried_abilities)
                     {
-                        carried_abilities[existing_slot].level += pending_ability_level;
-                        if(carried_abilities[existing_slot].level > 5)
-                            carried_abilities[existing_slot].level = 5;
-                        selected_ability_slot = existing_slot;
+                        remove_campfire_reward(slot);
+                        campfire_reward_replacement_slot = -1;
+                        start_ability_pickup_animation(pending_ability, pending_ability_level,
+                                                       reward_x, reward_y, false);
                     }
                     else
                     {
-                        carried_abilities[carried_ability_count] =
-                            {pending_ability, pending_ability_level};
-                        selected_ability_slot = carried_ability_count++;
+                        start_ability_pickup_animation(pending_ability, pending_ability_level,
+                                                       reward_x, reward_y, true);
                     }
-                    active_ability = carried_abilities[selected_ability_slot].ability;
-                    update_active_ability_icon();
-                    update_inventory_ability_selection();
+                }
+                else
+                {
+                    remove_campfire_reward(slot);
                     bn::sound_items::pickup_item.play();
-                    pantalla_actual = Pantalla::INVENTARIO;
-                    fade_screen_to_black();
-                    create_ability_data_screen();
-                    set_complete_screen_blackness(1);
-                    fade_screen_from_black();
+                    if(reward_type == RoomItemType::KEY)
+                    {
+                        ++key_count;
+                        update_key_count_label();
+                    }
+                    else if(reward_type == RoomItemType::ENERGY_POTION)
+                    {
+                        energy += 5;
+                        if(energy > energy_capacity) energy = energy_capacity;
+                        update_energy_label();
+                        update_energy_bar_fill(energy);
+                        start_energy_recovery_flash();
+                    }
+                    else
+                    {
+                        stamina += stamina_capacity_frames / 3;
+                        if(stamina > stamina_capacity_frames) stamina = stamina_capacity_frames;
+                        update_stamina_bar_fill(stamina);
+                        start_stamina_recovery_flash();
+                    }
                 }
-                else
-                {
-                    open_ability_replacement();
-                }
+                update_map();
+                break;
             }
-            else
-            {
-                RoomItemType reward_type = campfire_reward_type;
-                remove_room_item(room_manager.current_room_id(), reward_type,
-                                 campfire_reward_x, campfire_reward_y);
-                clear_campfire_reward();
-                bn::sound_items::pickup_item.play();
-                if (reward_type == RoomItemType::KEY)
-                {
-                    ++key_count;
-                    update_key_count_label();
-                }
-                else if (reward_type == RoomItemType::ENERGY_POTION)
-                {
-                    energy += 5;
-                    if (energy > energy_capacity) energy = energy_capacity;
-                    update_energy_label();
-                    update_energy_bar_fill(energy);
-                    start_energy_recovery_flash();
-                }
-                else
-                {
-                    stamina += stamina_capacity_frames / 3;
-                    if (stamina > stamina_capacity_frames) stamina = stamina_capacity_frames;
-                    update_stamina_bar_fill(stamina);
-                    start_stamina_recovery_flash();
-                }
-            }
-            update_map();
-        }
-
-        bool player_near_campfire_reward =
-            x >= campfire_reward_x - 10 && x <= campfire_reward_x + 10 &&
-            y >= campfire_reward_y - 12 && y <= campfire_reward_y + 12;
-        if (campfire_pending_rewards > 0 && !campfire_reward_active &&
-            room_manager.current_template() == RoomTemplateId::SPECIAL &&
-            !player_near_campfire_reward)
-        {
-            --campfire_pending_rewards;
-            spawn_campfire_reward(true);
         }
 
         int current_room_id = room_manager.current_room_id();
         if (current_room_id >= 0 && current_room_id < RoomManager::max_rooms)
         {
             FloorPotionState &potion = floor_potions[current_room_id];
-            if (potion.active && x >= potion.x - 10 && x <= potion.x + 10 &&
+            if (!world_pickup_animation_active && potion.active &&
+                x >= potion.x - 10 && x <= potion.x + 10 &&
                 y >= potion.y - 12 && y <= potion.y + 12)
             {
                 bn::sound_items::pickup_item.play();
@@ -8514,7 +10424,7 @@ int main()
                     update_energy_bar_fill(energy);
                     start_energy_recovery_flash();
                 }
-                else
+                else if(potion.type == RoomItemType::SPRINT_POTION)
                 {
                     stamina += stamina_capacity_frames / 3;
                     if (stamina > stamina_capacity_frames)
@@ -8524,6 +10434,16 @@ int main()
                     update_stamina_bar_fill(stamina);
                     start_stamina_recovery_flash();
                 }
+                else if(potion.type == RoomItemType::MEDIKIT)
+                {
+                    ++medikit_count;
+                    update_medikit_count_label();
+                }
+                else if(game_save::records().coins < 65535)
+                {
+                    ++game_save::records().coins;
+                    update_coin_count_label();
+                }
 
                 remove_room_item(potion.room_id, potion.type, potion.x, potion.y);
                 potion.active = false;
@@ -8532,7 +10452,33 @@ int main()
             }
         }
 
-        if(imported_room::contains(room_manager.current_template()))
+        bool coin_drop_collected = false;
+        if(!world_pickup_animation_active)
+        {
+            for(int index = 0; index < RoomManager::max_items_per_room; ++index)
+            {
+                const RoomItem* item = room_manager.item_at(current_room_id, index);
+                if(!item || (item->type != RoomItemType::COIN &&
+                             item->type != RoomItemType::COIN_SACK) ||
+                   x < item->x - 10 || x > item->x + 10 ||
+                   y < item->y - 12 || y > item->y + 12)
+                    continue;
+                int value = item->type == RoomItemType::COIN_SACK ? 5 : 1;
+                room_manager.remove_item(current_room_id, index);
+                int updated_coins = game_save::records().coins + value;
+                game_save::records().coins = updated_coins > 65535 ? 65535 : updated_coins;
+                update_coin_count_label();
+                bn::sound_items::pickup_item.play();
+                coin_drop_collected = true;
+            }
+        }
+        if(coin_drop_collected)
+        {
+            refresh_room_coin_drop_sprites();
+            update_map();
+        }
+
+        if(!world_pickup_animation_active && imported_room::contains(room_manager.current_template()))
         {
             for(const imported_room::Object& object : current_imported_room().objects)
             {
@@ -8575,59 +10521,45 @@ int main()
                 }
                 update_map();
             }
-            for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
+            if(!world_pickup_animation_active && !current_imported_room().boss)
             {
-                if(x < point.x - 10 || x > point.x + 10 ||
-                   y < point.y - 12 || y > point.y + 12) continue;
-                const RoomItem* reward = nullptr;
-                for(int index = 0; index < RoomManager::max_items_per_room; ++index)
+                for(const imported_room::AbilityPoint& point : current_imported_room().ability_points)
                 {
-                    const RoomItem* item = room_manager.item_at(current_room_id, index);
-                    if(item && int(item->type) >= int(RoomItemType::ABILITY_DASH) &&
-                       int(item->type) <= int(RoomItemType::ABILITY_FAMILIAR) &&
-                       item->x == point.x && item->y == point.y)
+                    if(x < point.x - 10 || x > point.x + 10 ||
+                       y < point.y - 12 || y > point.y + 12) continue;
+                    const RoomItem* reward = nullptr;
+                    for(int index = 0; index < RoomManager::max_items_per_room; ++index)
                     {
-                        reward = item;
+                        const RoomItem* item = room_manager.item_at(current_room_id, index);
+                        if(item && int(item->type) >= int(RoomItemType::ABILITY_DASH) &&
+                           int(item->type) <= int(RoomItemType::ABILITY_FAMILIAR) &&
+                           item->x == point.x && item->y == point.y)
+                        {
+                            reward = item;
+                            break;
+                        }
+                    }
+                    if(!reward) continue;
+                    RoomItemType reward_type = reward->type;
+                    pending_ability = static_cast<ActiveAbility>(
+                        int(reward_type) - int(RoomItemType::ABILITY_DASH));
+                    pending_ability_level = reward->level;
+                    int existing_slot = find_carried_ability(pending_ability);
+                    if(existing_slot < 0 && carried_ability_count >= max_carried_abilities)
+                    {
+                        reward_room_replacement_index = -2;
+                        remove_room_item(current_room_id, reward_type, point.x, point.y);
+                        start_ability_pickup_animation(pending_ability, pending_ability_level,
+                                                       point.x, point.y, true);
+                        update_map();
                         break;
                     }
-                }
-                if(!reward) continue;
-                RoomItemType reward_type = reward->type;
-                pending_ability = static_cast<ActiveAbility>(
-                    int(reward_type) - int(RoomItemType::ABILITY_DASH));
-                pending_ability_level = reward->level;
-                int existing_slot = find_carried_ability(pending_ability);
-                if(existing_slot < 0 && carried_ability_count >= max_carried_abilities)
-                {
-                    reward_room_replacement_index = -2;
-                    open_ability_replacement();
+                    remove_room_item(current_room_id, reward_type, point.x, point.y);
+                    start_ability_pickup_animation(pending_ability, pending_ability_level,
+                                                   point.x, point.y, false);
+                    update_map();
                     break;
                 }
-                remove_room_item(current_room_id, reward_type, point.x, point.y);
-                if(existing_slot >= 0)
-                {
-                    carried_abilities[existing_slot].level += pending_ability_level;
-                    if(carried_abilities[existing_slot].level > 5)
-                        carried_abilities[existing_slot].level = 5;
-                    selected_ability_slot = existing_slot;
-                }
-                else
-                {
-                    carried_abilities[carried_ability_count] =
-                        {pending_ability, pending_ability_level};
-                    selected_ability_slot = carried_ability_count++;
-                }
-                active_ability = carried_abilities[selected_ability_slot].ability;
-                update_active_ability_icon();
-                update_inventory_ability_selection();
-                bn::sound_items::pickup_item.play();
-                pantalla_actual = Pantalla::INVENTARIO;
-                fade_screen_to_black();
-                create_ability_data_screen();
-                set_complete_screen_blackness(1);
-                fade_screen_from_black();
-                update_map();
-                break;
             }
         }
 
@@ -8640,7 +10572,7 @@ int main()
         {
             reward_room_ability_rejected_until_leave = false;
         }
-        if(reward_room_unlocked && current_room_id == reward_room_id)
+        if(!world_pickup_animation_active && reward_room_unlocked && current_room_id == reward_room_id)
         {
             for(int index = 0; index < 4; ++index)
             {
@@ -8691,35 +10623,17 @@ int main()
                 {
                     reward_room_replacement_index = index;
                     reward_room_ability_rejected_until_leave = false;
-                    open_ability_replacement();
+                    start_ability_pickup_animation(pending_ability, pending_ability_level,
+                                                   reward.x, reward.y, true);
                     break;
                 }
 
                 remove_room_item(reward_room_id, reward.type, reward.x, reward.y);
                 reward.active = false;
                 reward_room_reward_sprites[reward_room_sprite_slots[index]].set_visible(false);
-                if(existing_slot >= 0)
-                {
-                    carried_abilities[existing_slot].level += pending_ability_level;
-                    if(carried_abilities[existing_slot].level > 5)
-                        carried_abilities[existing_slot].level = 5;
-                    selected_ability_slot = existing_slot;
-                }
-                else
-                {
-                    carried_abilities[carried_ability_count] =
-                        {pending_ability, pending_ability_level};
-                    selected_ability_slot = carried_ability_count++;
-                }
-                active_ability = carried_abilities[selected_ability_slot].ability;
-                update_active_ability_icon();
-                update_inventory_ability_selection();
-                bn::sound_items::pickup_item.play();
-                pantalla_actual = Pantalla::INVENTARIO;
-                fade_screen_to_black();
-                create_ability_data_screen();
-                set_complete_screen_blackness(1);
-                fade_screen_from_black();
+                reward_room_replacement_index = -1;
+                start_ability_pickup_animation(pending_ability, pending_ability_level,
+                                               reward.x, reward.y, false);
                 update_map();
                 break;
             }
@@ -8730,7 +10644,7 @@ int main()
             {
                 RoomDirection::LEFT, RoomDirection::RIGHT,
                 RoomDirection::UP, RoomDirection::DOWN};
-        if (key_count > 0)
+        if (!world_pickup_animation_active && key_count > 0)
         {
             for (RoomDirection direction : door_directions)
             {
@@ -8753,7 +10667,7 @@ int main()
         bool transition_fade_started = false;
         for (RoomDirection direction : door_directions)
         {
-            if (!trapdoor_transitioned_this_frame && room_manager.has_door(direction) &&
+            if (!world_pickup_animation_active && !trapdoor_transitioned_this_frame && room_manager.has_door(direction) &&
                 room_manager.door_is_open(direction) &&
                 room_manager.touching_door(x, y, direction))
             {
@@ -8803,24 +10717,8 @@ int main()
                 if (energy < 5) start_energy_recovery_flash();
             }
 
-            if (room_manager.current_template() == RoomTemplateId::SPECIAL && carried_npc_index >= 0)
-            {
-                NpcState &npc = npcs[carried_npc_index];
-                npc.delivered = true;
-                npc.room_id = entered_room_id;
-                carried_npc_index = -1;
-                ++rescued_adventurers;
-                ++game_save::records().adventurers_saved;
-                update_rescued_count_label();
-                spawn_campfire_reward();
-                energy += 3;
-                if (energy > energy_capacity)
-                {
-                    energy = energy_capacity;
-                }
-                update_energy_label();
-                start_energy_recovery_flash();
-            }
+            if(room_manager.current_template() == RoomTemplateId::SPECIAL)
+                deliver_active_adventurer(entered_room_id);
 
             update_room_background();
             update_room_obstacles();
@@ -8857,6 +10755,22 @@ int main()
         }
 
         // Tocar las escaleras del ultimo cuarto genera el siguiente piso.
+        if(!world_pickup_animation_active && world_portal_sprite.has_value() && room_manager.current_room_id() == world_portal_room_id && x >= world_portal_x - 10 && x <= world_portal_x + 10 &&
+           y >= world_portal_y - 10 && y <= world_portal_y + 10)
+        {
+            bn::sound_items::stairs.play();
+            fade_room_transition(true);
+            if(save_active_game())
+            {
+                clear_world_portal();
+                return_to_title();
+                fade_room_transition(false);
+                bn::core::update();
+                continue;
+            }
+            fade_room_transition(false);
+        }
+
         const composition_rooms::Room* stairs_source = current_composition_room();
         int stairs_x = stairs_source ? stairs_source->position('e').x : 0;
         int stairs_y = stairs_source ? stairs_source->position('e').y +
@@ -8871,7 +10785,8 @@ int main()
         }
         bool near_stairs = x >= stairs_x - 10 && x <= stairs_x + 10 &&
             y >= stairs_y - 10 && y <= stairs_y + 10;
-        if ((room_manager.current_room_id() == room_manager.stairs_room_id() || authored_stairs) && near_stairs)
+        if (!world_pickup_animation_active &&
+            (room_manager.current_room_id() == room_manager.stairs_room_id() || authored_stairs) && near_stairs)
         {
             bn::sound_items::stairs.play();
             generate_next_floor();
@@ -8879,7 +10794,7 @@ int main()
 
         bool enemies_stopped = time_stopped_room_id == room_manager.current_room_id();
         bool plant_bullet_hit_player = false;
-        if (!enemies_stopped)
+        if (!enemies_stopped && !world_pickup_animation_active)
         {
             update_skeleton();
             update_bats();
@@ -8996,15 +10911,15 @@ int main()
             bn::sound_items::hit.play();
         }
 
-        if (plant_bullet_hit_player && !dashing)
+        if (!world_pickup_animation_active && plant_bullet_hit_player && !dashing)
         {
             damage_player();
         }
-        if (touching_enemy && !enemy_contact_latched && !dashing)
+        if (!world_pickup_animation_active && touching_enemy && !enemy_contact_latched && !dashing)
         {
             damage_player();
         }
-        if (touching_active_spikes && !spike_contact_latched && !dashing)
+        if (!world_pickup_animation_active && touching_active_spikes && !spike_contact_latched && !dashing)
         {
             damage_player();
         }
@@ -9063,17 +10978,19 @@ int main()
                 bn::sprite_items::posion_energy_16x16_animate.tiles_item(), potion_animation_frame);
             sprint_potion_sprite.set_tiles(
                 bn::sprite_items::posion_sprint_16x16_animate.tiles_item(), potion_animation_frame);
-            if (campfire_reward_active && campfire_reward_sprite.has_value())
+            for(int slot = 0; slot < max_campfire_rewards; ++slot)
             {
-                if (campfire_reward_type == RoomItemType::ENERGY_POTION)
+                if(!campfire_rewards[slot].active || !campfire_reward_sprites[slot].has_value())
+                    continue;
+                if(campfire_rewards[slot].type == RoomItemType::ENERGY_POTION)
                 {
-                    campfire_reward_sprite->set_tiles(
+                    campfire_reward_sprites[slot]->set_tiles(
                         bn::sprite_items::posion_energy_16x16_animate.tiles_item(),
                         potion_animation_frame);
                 }
-                else if (campfire_reward_type == RoomItemType::SPRINT_POTION)
+                else if(campfire_rewards[slot].type == RoomItemType::SPRINT_POTION)
                 {
-                    campfire_reward_sprite->set_tiles(
+                    campfire_reward_sprites[slot]->set_tiles(
                         bn::sprite_items::posion_sprint_16x16_animate.tiles_item(),
                         potion_animation_frame);
                 }
@@ -9150,7 +11067,10 @@ int main()
             delivered_npc_animation_alt_frame = false;
         }
 
+        update_medikit_pickup_animation();
+        update_ability_pickup_animation();
         update_npc_sprites(displayed_frame);
+        update_adventure_bullets();
         update_reward_lever_visibility();
         // Movimiento -----------------------
 

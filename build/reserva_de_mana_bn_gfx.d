@@ -1,0 +1,1 @@
+reserva_de_mana_bn_gfx.o: reserva_de_mana_bn_gfx.s

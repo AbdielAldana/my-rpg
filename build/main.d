@@ -60,6 +60,7 @@ main.o: C:/GBA/butano/my-rpg/src/main.cpp \
  C:/GBA/butano/butano/include/bn_bgs_mosaic.h \
  C:/GBA/butano/butano/include/bn_sprites_mosaic.h \
  C:/GBA/butano/butano/include/bn_sprite_affine_mat_ptr.h \
+ C:/GBA/butano/butano/include/bn_sprite_double_size_mode.h \
  C:/GBA/butano/butano/include/bn_sprite_palette_ptr.h \
  C:/GBA/butano/butano/include/bn_sprite_text_generator.h \
  C:/GBA/butano/butano/include/bn_vector.h \
@@ -71,7 +72,14 @@ main.o: C:/GBA/butano/my-rpg/src/main.cpp \
  C:/GBA/butano/butano/include/bn_power_of_two.h \
  C:/GBA/butano/butano/include/bn_utf8_character.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_player.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_1.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_2.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_3.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_4.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_key.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_medikit.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_coin.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_coin_sack.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_posion_energy_16x16_animate.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_posion_sprint_16x16_animate.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_door.h \
@@ -95,7 +103,9 @@ main.o: C:/GBA/butano/my-rpg/src/main.cpp \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_mushy.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_plant_enemy.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_bullet_enemy_plant.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_bullet_aventure_aliado.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_stairs.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_portal_16x16_animate.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_spikes_16x16_animate.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_campfire.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_label_16x16_animate.h \
@@ -121,6 +131,29 @@ main.o: C:/GBA/butano/my-rpg/src/main.cpp \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_ui_stamina_bar.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_ui_energy_bar_liquid.h \
  C:/GBA/butano/my-rpg/build/bn_sprite_items_ui_sastamina_bar_liquid.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_chispa_ligera.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_nucleo_denso.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_esencia_concentrada.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_cristal_de_cadencia.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_sello_de_abundancia.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_descarga_gemela.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_descarga_trina.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_corazon_arcano.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_viento_encantado.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_canalizador_rapido.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_orbe_mayor.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_orbe_menor.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_reserva_de_mana.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_totem_de_repeticion.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_baston_liviano.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_baston_pesado.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_fragmento_de_reapidez.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_fragmento_de_multiplicacion.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_sello_de_potencia.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_gran_nucleo_arcano.h \
+ C:/GBA/butano/my-rpg/build/bn_sprite_items_cruz_divina.h \
+ C:/GBA/butano/my-rpg/include/player_stats.h \
+ C:/GBA/butano/butano/include/bn_fixed.h \
  C:/GBA/butano/my-rpg/build/bn_sound_items.h \
  C:/GBA/butano/butano/include/bn_sound_item.h \
  C:/GBA/butano/butano/include/bn_sound_handle.h \
@@ -145,6 +178,7 @@ main.o: C:/GBA/butano/my-rpg/src/main.cpp \
  C:/GBA/butano/my-rpg/build/bn_regular_bg_items_room_campfire.h \
  C:/GBA/butano/my-rpg/build/bn_regular_bg_items_boss_1.h \
  C:/GBA/butano/my-rpg/build/bn_regular_bg_items_boss_2.h \
+ C:/GBA/butano/my-rpg/build/bn_regular_bg_items_boss_rat.h \
  C:/GBA/butano/my-rpg/build/bn_regular_bg_items_inventory.h \
  C:/GBA/butano/my-rpg/build/bn_regular_bg_items_habilidad_data.h \
  C:/GBA/butano/my-rpg/build/bn_regular_bg_items_mapback.h \
@@ -159,6 +193,7 @@ main.o: C:/GBA/butano/my-rpg/src/main.cpp \
  C:/GBA/butano/my-rpg/include/sprite_collision.h \
  C:/GBA/butano/my-rpg/include/game_save.h \
  C:/GBA/butano/butano/include/bn_type_traits.h \
+ C:/GBA/butano/my-rpg/include/passive_shop.h \
  C:/GBA/butano/my-rpg/include/imported_room.h
 C:/GBA/butano/butano/include/bn_core.h:
 C:/GBA/butano/butano/include/bn_span.h:
@@ -221,6 +256,7 @@ C:/GBA/butano/butano/include/bn_blending.h:
 C:/GBA/butano/butano/include/bn_bgs_mosaic.h:
 C:/GBA/butano/butano/include/bn_sprites_mosaic.h:
 C:/GBA/butano/butano/include/bn_sprite_affine_mat_ptr.h:
+C:/GBA/butano/butano/include/bn_sprite_double_size_mode.h:
 C:/GBA/butano/butano/include/bn_sprite_palette_ptr.h:
 C:/GBA/butano/butano/include/bn_sprite_text_generator.h:
 C:/GBA/butano/butano/include/bn_vector.h:
@@ -232,7 +268,14 @@ C:/GBA/butano/butano/include/bn_utf8_characters_map_ref.h:
 C:/GBA/butano/butano/include/bn_power_of_two.h:
 C:/GBA/butano/butano/include/bn_utf8_character.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_player.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_1.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_2.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_3.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_aventure_4.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_key.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_medikit.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_coin.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_coin_sack.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_posion_energy_16x16_animate.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_posion_sprint_16x16_animate.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_door.h:
@@ -256,7 +299,9 @@ C:/GBA/butano/my-rpg/build/bn_sprite_items_bat.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_mushy.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_plant_enemy.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_bullet_enemy_plant.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_bullet_aventure_aliado.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_stairs.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_portal_16x16_animate.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_spikes_16x16_animate.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_campfire.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_label_16x16_animate.h:
@@ -282,6 +327,29 @@ C:/GBA/butano/my-rpg/build/bn_sprite_items_hability_familiar_icon.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_ui_stamina_bar.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_ui_energy_bar_liquid.h:
 C:/GBA/butano/my-rpg/build/bn_sprite_items_ui_sastamina_bar_liquid.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_chispa_ligera.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_nucleo_denso.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_esencia_concentrada.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_cristal_de_cadencia.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_sello_de_abundancia.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_descarga_gemela.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_descarga_trina.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_corazon_arcano.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_viento_encantado.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_canalizador_rapido.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_orbe_mayor.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_orbe_menor.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_reserva_de_mana.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_totem_de_repeticion.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_baston_liviano.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_baston_pesado.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_fragmento_de_reapidez.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_fragmento_de_multiplicacion.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_sello_de_potencia.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_gran_nucleo_arcano.h:
+C:/GBA/butano/my-rpg/build/bn_sprite_items_cruz_divina.h:
+C:/GBA/butano/my-rpg/include/player_stats.h:
+C:/GBA/butano/butano/include/bn_fixed.h:
 C:/GBA/butano/my-rpg/build/bn_sound_items.h:
 C:/GBA/butano/butano/include/bn_sound_item.h:
 C:/GBA/butano/butano/include/bn_sound_handle.h:
@@ -306,6 +374,7 @@ C:/GBA/butano/my-rpg/build/bn_regular_bg_items_room_tutorial.h:
 C:/GBA/butano/my-rpg/build/bn_regular_bg_items_room_campfire.h:
 C:/GBA/butano/my-rpg/build/bn_regular_bg_items_boss_1.h:
 C:/GBA/butano/my-rpg/build/bn_regular_bg_items_boss_2.h:
+C:/GBA/butano/my-rpg/build/bn_regular_bg_items_boss_rat.h:
 C:/GBA/butano/my-rpg/build/bn_regular_bg_items_inventory.h:
 C:/GBA/butano/my-rpg/build/bn_regular_bg_items_habilidad_data.h:
 C:/GBA/butano/my-rpg/build/bn_regular_bg_items_mapback.h:
@@ -320,4 +389,5 @@ C:/GBA/butano/my-rpg/include/sprite_collision.h:
 C:/GBA/butano/my-rpg/include/sprite_collision.h:
 C:/GBA/butano/my-rpg/include/game_save.h:
 C:/GBA/butano/butano/include/bn_type_traits.h:
+C:/GBA/butano/my-rpg/include/passive_shop.h:
 C:/GBA/butano/my-rpg/include/imported_room.h:

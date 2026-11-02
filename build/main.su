@@ -1,0 +1,153 @@
+C:/GBA/butano/my-rpg/src/main.cpp:1142:42:main()::<lambda()>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:6081:34:main()::<lambda()>	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:4881:31:main()::<lambda()>	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:1418:33:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:5523:41:main()::<lambda()>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:6040:39:main()::<lambda()>	16	static
+C:/GBA/butano/my-rpg/include/game_save.h:75:10:void game_save::Reader::value(Type&) [with Type = unsigned int]	8	static
+C:/GBA/butano/butano/include/bn_optional.h:469:21:) [with Args = {bn::regular_bg_ptr}; Type = bn::regular_bg_ptr]	16	static
+C:/GBA/butano/butano/include/bn_optional.h:469:21:) [with Args = {bn::sprite_ptr}; Type = bn::sprite_ptr]	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:9057:39:main()::<lambda(int, int, int, int)>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:5667:39:main()::<lambda(int, int)>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:5553:29:main()::<lambda(int, RoomItemType, int, int)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:861:29:main()::<lambda(bn::sprite_ptr&, ActiveAbility)>	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:318:30:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:314:34:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:275:28:main()::<lambda()>	12	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 24>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 40>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 2>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 12>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 20>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 128>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 4>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 16>::~vector()	24	static
+C:/GBA/butano/butano/include/bn_vector.h:965:7:bn::vector<bn::sprite_ptr, 8>::~vector()	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:5572:33:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:2952:31:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:587:29:main()::<lambda(int, int, int)>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:332:30:main()::<lambda(int)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:3734:25:main()::<lambda(int, int, int)>	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:6212:32:main()::<lambda()>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:4284:30:constprop(int, int, int&, int&, int&, int&) const	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:1522:35:main()::<lambda()>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:7689:35:main()::<lambda()>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:3712:30:main()::<lambda(int, int, int)>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:2089:34:main()::<lambda(bn::fixed)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:4943:32:main()::<lambda(int, int, int)>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:5302:28:main()::<lambda()>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:5348:30:main()::<lambda()>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:968:39:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:7423:39:main()::<lambda(RoomItemType, int, int)>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:6692:31:main()::<lambda(auto:12&)> [with auto:12 = game_save::Reader]	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:6692:31:main()::<lambda(auto:12&)> [with auto:12 = game_save::Writer]	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:6899:29:main()::<lambda()>	56	static
+C:/GBA/butano/butano/include/bn_seed_random.h:65:38:constexpr unsigned int bn::seed_random::get()	0	static
+C:/GBA/butano/my-rpg/include/imported_room.h:75:29:constexpr const imported_room::Object* imported_room::Room::by_asset(imported_room::Asset, int) const	12	static
+C:/GBA/butano/my-rpg/src/main.cpp:4849:36:main()::<lambda(int, int)>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:140:6:void create_floor_label(int, char*)	56	static
+C:/GBA/butano/my-rpg/src/main.cpp:164:6:void create_seed_label(unsigned int, char*)	56	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [20]]	568	static
+C:/GBA/butano/butano/include/bn_string_view.h:70:15:constexpr bn::string_view::string_view(const_pointer)	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:1037:35:main()::<lambda()>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:1003:39:main()::<lambda()>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:1098:39:main()::<lambda()>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:1103:36:main()::<lambda()>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:1805:30:main()::<lambda()>	64	static
+C:/GBA/butano/butano/include/bn_assert.h:364:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg1&, const Arg2&) [with Arg1 = char [16]; Arg2 = int]	568	static
+C:/GBA/butano/my-rpg/src/main.cpp:5043:43:main()::<lambda()>	200	static
+C:/GBA/butano/my-rpg/src/main.cpp:5394:32:main()::<lambda()>	168	static
+C:/GBA/butano/my-rpg/src/main.cpp:4993:32:main()::<lambda()>	72	static
+C:/GBA/butano/butano/include/bn_assert.h:376:14:) [with Args = {char [16], int, char [4], int}]	568	static
+C:/GBA/butano/butano/include/bn_seed_random.h:148:33:constexpr int bn::seed_random::get_int(int, int)	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:6417:37:main()::<lambda()>::<lambda(int, const char*, bn::vector<bn::sprite_ptr, 12>&)>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:6162:34:main()::<lambda()>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:5286:49:main()::<lambda()>	56	static
+C:/GBA/butano/my-rpg/src/main.cpp:1197:43:main()::<lambda()>	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:1392:41:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:1385:42:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:1214:42:main()::<lambda()>	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:1232:40:main()::<lambda()>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:6299:30:main()::<lambda()>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:1399:40:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:4631:31:main()::<lambda(int)>	88	static
+C:/GBA/butano/my-rpg/src/main.cpp:191:6:void show_logo_screen()	240	static
+C:/GBA/butano/my-rpg/src/main.cpp:4557:29:main()::<lambda(bool)>	128	static
+C:/GBA/butano/my-rpg/src/main.cpp:2572:40:main()::<lambda(const imported_room::Room&, imported_room::Asset, int*)>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:2786:32:main()::<lambda()>	144	static
+C:/GBA/butano/my-rpg/src/main.cpp:2656:29:main()::<lambda()>	184	static
+C:/GBA/butano/my-rpg/src/main.cpp:2611:34:main()::<lambda()>	80	static
+C:/GBA/butano/my-rpg/src/main.cpp:2874:31:main()::<lambda()>	88	static
+C:/GBA/butano/my-rpg/src/main.cpp:3792:24:main()::<lambda()>	88	static
+C:/GBA/butano/my-rpg/src/main.cpp:4423:32:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:6385:38:main()::<lambda()>	128	static
+C:/GBA/butano/my-rpg/src/main.cpp:6463:29:main()::<lambda()>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:5621:47:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:3871:27:main()::<lambda()>	144	static
+C:/GBA/butano/my-rpg/src/main.cpp:2476:39:main()::<lambda(int, int)>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:3757:28:main()::<lambda()>	80	static
+C:/GBA/butano/my-rpg/src/main.cpp:4011:38:main()::<lambda()>	128	static
+C:/GBA/butano/butano/include/bn_assert.h:364:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg1&, const Arg2&) [with Arg1 = char [15]; Arg2 = int]	568	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [54]]	568	static
+C:/GBA/butano/butano/include/bn_assert.h:376:14:) [with Args = {char [25], int, char [4], short unsigned int}]	568	static
+C:/GBA/butano/butano/include/bn_assert.h:364:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg1&, const Arg2&) [with Arg1 = char [14]; Arg2 = int]	568	static
+C:/GBA/butano/my-rpg/src/main.cpp:1882:38:main()::<lambda(bn::fixed)>::<lambda(auto:8)> [with auto:8 = bn::bg_palette_ptr]	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:1882:38:main()::<lambda(bn::fixed)>::<lambda(auto:8)> [with auto:8 = bn::sprite_palette_ptr]	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:1855:31:main()::<lambda(bn::fixed)>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:2073:42:main()::<lambda(bn::fixed)>	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:2199:42:main()::<lambda(bn::fixed)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:2206:33:main()::<lambda()>	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:2215:35:main()::<lambda()>	40	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [22]]	568	static
+C:/GBA/butano/butano/include/bn_optional.h:456:35:constexpr Type& bn::optional<Type>::operator*() [with Type = bn::sprite_ptr]	16	static
+C:/GBA/butano/butano/include/bn_optional.h:436:35:constexpr Type* bn::optional<Type>::operator->() [with Type = bn::regular_bg_ptr]	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:6054:46:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:4888:32:main()::<lambda()>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:896:43:main()::<lambda(ActiveAbility, int, int, int, bool)>	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:1497:47:main()::<lambda()>	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:2302:35:main()::<lambda()>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:1640:39:main()::<lambda()>	416	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [35]]	568	static
+C:/GBA/butano/butano/include/bn_assert.h:364:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg1&, const Arg2&) [with Arg1 = char [39]; Arg2 = int]	568	static
+C:/GBA/butano/my-rpg/src/main.cpp:1289:28:main()::<lambda(const bn::sprite_item&, bn::vector<bn::sprite_ptr, 3>&, bool (&)[3], bn::sprite_tiles_ptr&, bn::span<bn::tile>&, int, int)>	80	static
+C:/GBA/butano/my-rpg/src/main.cpp:1352:36:main()::<lambda(int)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:1367:35:main()::<lambda(int)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:1375:23:main()::<lambda(int)>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:6311:26:main()::<lambda()>	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:2227:33:main()::<lambda(bool)>	72	static
+C:/GBA/butano/butano/include/bn_vector.h:261:29:Type& bn::ivector<Type>::operator[](size_type) [with Type = bn::sprite_ptr]	32	static
+C:/GBA/butano/butano/include/bn_vector.h:754:10:void bn::ivector<Type>::clear() requires !(is_trivially_destructible_v<Type>) [with Type = bn::sprite_ptr]	24	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [23]]	568	static
+C:/GBA/butano/my-rpg/src/main.cpp:6956:29:main()::<lambda()>	40	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [15]]	568	static
+C:/GBA/butano/butano/include/bn_vector.h:344:10:void bn::ivector<Type>::push_back(value_type&&) [with Type = bn::sprite_ptr]	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:1546:36:main()::<lambda()>	88	static
+C:/GBA/butano/my-rpg/src/main.cpp:1711:44:main()::<lambda()>	56	static
+C:/GBA/butano/my-rpg/src/main.cpp:5712:23:main()::<lambda()>	120	static
+C:/GBA/butano/my-rpg/src/main.cpp:6190:31:main()::<lambda()>	24	static
+C:/GBA/butano/my-rpg/src/main.cpp:6170:30:main()::<lambda()>	64	static
+C:/GBA/butano/my-rpg/src/main.cpp:6091:34:main()::<lambda(bool)>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:6091:34:main()::<lambda(bool)>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:7748:27:main()::<lambda()>	176	static
+C:/GBA/butano/my-rpg/src/main.cpp:5134:43:main()::<lambda()>	56	static
+C:/GBA/butano/my-rpg/src/main.cpp:6232:31:0() const	96	static
+C:/GBA/butano/my-rpg/src/main.cpp:6232:31:main()::<lambda()>	8	static
+C:/GBA/butano/my-rpg/src/main.cpp:2256:32:main()::<lambda()>	144	static
+C:/GBA/butano/my-rpg/src/main.cpp:5864:31:main()::<lambda()>	88	static
+C:/GBA/butano/butano/include/bn_assert.h:353:14:void _bn::assert::show_args(const char*, const char*, const char*, int, const Arg&) [with Arg = char [16]]	568	static
+C:/GBA/butano/butano/include/bn_vector.h:321:29:Type& bn::ivector<Type>::back() [with Type = bn::sprite_ptr]	16	static
+C:/GBA/butano/my-rpg/src/main.cpp:701:43:main()::<lambda()>	32	static
+C:/GBA/butano/my-rpg/src/main.cpp:4133:37:main()::<lambda()>	208	static
+C:/GBA/butano/my-rpg/src/main.cpp:3004:39:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:5172:38:main()::<lambda()>	80	static
+C:/GBA/butano/my-rpg/src/main.cpp:6068:42:main()::<lambda()>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:3225:34:main()::<lambda()>	712	static
+C:/GBA/butano/my-rpg/src/main.cpp:7197:29:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:7610:28:main()::<lambda()>	40	static
+C:/GBA/butano/my-rpg/src/main.cpp:5984:31:main()::<lambda()>	48	static
+C:/GBA/butano/my-rpg/src/main.cpp:6969:23:main()::<lambda()>	104	static
+C:/GBA/butano/my-rpg/src/main.cpp:7448:25:main()::<lambda()>	112	static
+C:/GBA/butano/my-rpg/src/main.cpp:8010:38:main()::<lambda(int, int, int)>	72	static
+C:/GBA/butano/my-rpg/src/main.cpp:7306:30:main()::<lambda()>	80	static
+C:/GBA/butano/my-rpg/src/main.cpp:7873:32:main()::<lambda()>	112	static
+C:/GBA/butano/my-rpg/src/main.cpp:237:5:int main()	12736	static

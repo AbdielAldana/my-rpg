@@ -9,9 +9,9 @@
 //
 //	boss_2_bn_gfx, 256x256@4, 
 //	+ palette 16 entries, not compressed
-//	+ 256 tiles (t|f|p reduced) not compressed
+//	+ 276 tiles (t|f|p reduced) not compressed
 //	+ regular map (flat), not compressed, 32x32 
-//	Total size: 32 + 8192 + 2048 = 10272
+//	Total size: 32 + 8832 + 2048 = 10912
 //
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
@@ -21,8 +21,8 @@
 #ifndef GRIT_BOSS_2_BN_GFX_H
 #define GRIT_BOSS_2_BN_GFX_H
 
-#define boss_2_bn_gfxTilesLen 8192
-extern const bn::tile boss_2_bn_gfxTiles[256];
+#define boss_2_bn_gfxTilesLen 8832
+extern const bn::tile boss_2_bn_gfxTiles[276];
 
 #define boss_2_bn_gfxMapLen 2048
 extern const bn::regular_bg_map_cell boss_2_bn_gfxMap[1024];
@@ -37,7 +37,7 @@ extern const bn::color boss_2_bn_gfxPal[16];
 namespace bn::regular_bg_items
 {
     constexpr inline regular_bg_item boss_2(
-            regular_bg_tiles_item(span<const tile>(boss_2_bn_gfxTiles, 256), bpp_mode::BPP_4, compression_type::NONE), 
+            regular_bg_tiles_item(span<const tile>(boss_2_bn_gfxTiles, 276), bpp_mode::BPP_4, compression_type::NONE), 
             bg_palette_item(span<const color>(boss_2_bn_gfxPal, 16), bpp_mode::BPP_4, compression_type::NONE),
             regular_bg_map_item(boss_2_bn_gfxMap[0], size(32, 32), compression_type::NONE, 1, false));
 }

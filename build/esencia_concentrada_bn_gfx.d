@@ -1,0 +1,1 @@
+esencia_concentrada_bn_gfx.o: esencia_concentrada_bn_gfx.s

@@ -1,0 +1,1 @@
+descarga_gemela_bn_gfx.o: descarga_gemela_bn_gfx.s

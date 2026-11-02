@@ -8,8 +8,8 @@
 namespace imported_room
 {
 
-enum class Asset { TABLE, LIBRARY_FRONT, LIBRARY_BACK, COLUMN, SEAT, VASE, ROCK, SIGN, AXE, SPIKES, SKELETON, BAT, PLANT, MUSHY, CHEST, KEY, ENERGY, SPRINT, LEVER, CAMPFIRE, STAIRS, DOOR, DOOR_SPECIAL, DOOR_CLOSED, DOOR_SPECIAL_CLOSED, TABLE_ARMOR, BOX, PLAYER };
-enum class Role { DECORATION, ENEMY, DOOR, HAZARD, ITEM, LEVER, INTERACTIVE, STAIRS };
+enum class Asset { TABLE, LIBRARY_FRONT, LIBRARY_BACK, COLUMN, SEAT, VASE, ROCK, SIGN, AXE, SPIKES, SKELETON, BAT, PLANT, MUSHY, CHEST, KEY, ENERGY, SPRINT, LEVER, CAMPFIRE, STAIRS, PORTAL, DOOR, DOOR_SPECIAL, DOOR_CLOSED, DOOR_SPECIAL_CLOSED, TABLE_ARMOR, BOX, PLAYER };
+enum class Role { DECORATION, ENEMY, DOOR, HAZARD, ITEM, LEVER, INTERACTIVE, STAIRS, PORTAL };
 
 struct Object
 {
@@ -57,6 +57,9 @@ struct Room
     const char* name;
     RoomBackgroundId background;
     bool boss;
+    bool menu_portal_room;
+    bool menu_demo_room;
+    bool menu_shop_room;
     int spawn_x;
     int spawn_y;
     int decoration_count;
@@ -84,7 +87,7 @@ struct Room
     }
 };
 
-constexpr int room_count = 2;
+constexpr int room_count = 5;
 constexpr int boss_room_count = 1;
 constexpr int ordinary_room_count = 1;
 constexpr int max_decoration_count = 29;
@@ -98,7 +101,7 @@ constexpr Point empty_points[] = {{0, 0}};
 constexpr AbilityPoint empty_abilities[] = {{0, 0, false}};
 constexpr Rect empty_rects[] = {{0, 0, 0, 0}};
 constexpr Room empty_room = {RoomTemplateId::FIELD, "", "", RoomBackgroundId::LAND, false,
-    0, 0, 0, 0, empty_enemies, -1, {empty_objects, 0},
+    false, false, false, 0, 0, 0, 0, empty_enemies, -1, {empty_objects, 0},
     {empty_points, 0}, {empty_abilities, 0}, {empty_rects, 0}};
 
 constexpr int enemies_0[] = {-1};
@@ -133,10 +136,10 @@ constexpr Object objects_0[] =
     {Asset::ROCK, Role::DECORATION, 32, -8, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
     {Asset::ROCK, Role::DECORATION, 32, -24, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
     {Asset::ROCK, Role::DECORATION, 32, -40, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
-    {Asset::BAT, Role::ENEMY, -96, 56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
-    {Asset::BAT, Role::ENEMY, -96, -56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
-    {Asset::BAT, Role::ENEMY, 96, -56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
-    {Asset::BAT, Role::ENEMY, 96, 56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::BAT, Role::ENEMY, -96, 56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1, false, true},
+    {Asset::BAT, Role::ENEMY, -96, -56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1, false, true},
+    {Asset::BAT, Role::ENEMY, 96, -56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1, false, true},
+    {Asset::BAT, Role::ENEMY, 96, 56, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1, false, true},
     {Asset::SPIKES, Role::HAZARD, 0, 8, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
     {Asset::SPIKES, Role::HAZARD, 0, -8, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
     {Asset::DOOR, Role::DOOR, -112, 0, 16, 32, 0, 0, false, false, {-8, 8, -16, 16}, 0},
@@ -160,7 +163,11 @@ constexpr Rect collisions_0[] =
 constexpr int enemies_1[] = {-1};
 constexpr Object objects_1[] =
 {
-    {Asset::DOOR, Role::DOOR, 72, 72, 16, 32, 0, 90, false, false, {-16, -8, -8, 8}, 3},
+    {Asset::DOOR, Role::DOOR, 0, 72, 16, 32, 0, 90, false, false, {-16, -8, -8, 8}, 3},
+    {Asset::ENERGY, Role::ITEM, -32, 40, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::ENERGY, Role::ITEM, 32, 40, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SPRINT, Role::ITEM, 32, 24, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SPRINT, Role::ITEM, -32, 24, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
 };
 constexpr Point q_points_1[] =
 {
@@ -168,9 +175,143 @@ constexpr Point q_points_1[] =
 };
 constexpr AbilityPoint ability_points_1[] =
 {
-    {0, 0, false},
+    {0, 24, true},
 };
 constexpr Rect collisions_1[] =
+{
+    {40, 16, 16, 32},
+    {-56, 16, 16, 32},
+    {-40, 0, 88, 8},
+    {40, 8, 8, 8},
+    {-48, 0, 8, 16},
+    {16, 48, 88, 16},
+    {-104, 48, 88, 16},
+};
+
+constexpr int enemies_2[] = {-1};
+constexpr Object objects_2[] =
+{
+    {Asset::DOOR, Role::DOOR, 112, 0, 16, 32, 0, 0, true, false, {-8, 8, 8, 16}, 1},
+    {Asset::VASE, Role::DECORATION, -96, -56, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::VASE, Role::DECORATION, -96, -40, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::VASE, Role::DECORATION, -80, -56, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, 0, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, 32, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, 16, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, 8, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, 48, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, 40, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -80, 48, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::TABLE, Role::DECORATION, -56, -24, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::TABLE, Role::DECORATION, -16, -24, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::TABLE, Role::DECORATION, 24, -24, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::TABLE, Role::DECORATION, 64, -24, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::LEVER, Role::LEVER, -56, -32, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::LEVER, Role::LEVER, -16, -32, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::LEVER, Role::LEVER, 24, -32, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::LEVER, Role::LEVER, 64, -32, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SIGN, Role::DECORATION, -88, -24, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::SIGN, Role::DECORATION, 92, -26, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::SEAT, Role::DECORATION, 89, -49, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::PLAYER, Role::DECORATION, 89, -55, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SPIKES, Role::HAZARD, -56, -10, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SPIKES, Role::HAZARD, -16, -10, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SPIKES, Role::HAZARD, 23, -10, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SPIKES, Role::HAZARD, 64, -10, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::TABLE_ARMOR, Role::DECORATION, -36, -58, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::LIBRARY_FRONT, Role::DECORATION, 48, -64, 16, 32, 0, 0, false, true, {-8, 8, 8, 16}, -1},
+    {Asset::BOX, Role::DECORATION, 96, 56, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 96, 48, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 80, 56, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 80, 48, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 64, 48, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 48, 56, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -40, 40, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -24, 56, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::VASE, Role::DECORATION, -56, 48, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::MUSHY, Role::ENEMY, -56, -43, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::MUSHY, Role::ENEMY, -16, -44, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::MUSHY, Role::ENEMY, 23, -44, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::MUSHY, Role::ENEMY, 64, -43, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::PLANT, Role::ENEMY, -111, -72, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+};
+constexpr Point q_points_2[] =
+{
+    {0, 0},
+};
+constexpr AbilityPoint ability_points_2[] =
+{
+    {0, 0, false},
+};
+constexpr Rect collisions_2[] =
+{
+    {-103, -31, 208, 13},
+    {60, 44, 44, 7},
+    {67, 51, 37, 11},
+    {43, 51, 24, 11},
+    {-44, 34, 8, 8},
+    {-42, 42, 6, 6},
+    {-44, 61, 8, 1},
+    {-42, 60, 6, 1},
+    {-42, 48, 1, 12},
+    {-41, 48, 21, 12},
+    {-99, 42, 57, 19},
+};
+
+constexpr int enemies_3[] = {-1};
+constexpr Object objects_3[] =
+{
+    {Asset::COLUMN, Role::DECORATION, -80, -48, 16, 32, 0, 0, false, true, {-3, 3, 0, 8}, -1},
+    {Asset::COLUMN, Role::DECORATION, 80, -48, 16, 32, 0, 0, false, true, {-3, 3, 0, 8}, -1},
+    {Asset::STAIRS, Role::STAIRS, -32, -8, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::COLUMN, Role::DECORATION, -80, 32, 16, 32, 0, 0, false, true, {-3, 3, 0, 8}, -1},
+    {Asset::DOOR, Role::DOOR, 0, 72, 16, 32, 0, 90, false, false, {-16, 16, -8, 8}, 3},
+    {Asset::PORTAL, Role::PORTAL, 32, -8, 16, 16, 0, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::TABLE_ARMOR, Role::DECORATION, -40, -56, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::TABLE, Role::DECORATION, 40, -56, 32, 16, 0, 0, false, true, {-16, 16, 0, 8}, -1},
+    {Asset::SEAT, Role::DECORATION, 32, -40, 16, 16, 1, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::SEAT, Role::DECORATION, 48, -40, 16, 16, 1, 0, false, false, {-5, 5, -8, 0}, -1},
+    {Asset::LIBRARY_FRONT, Role::DECORATION, 0, -64, 16, 32, 0, 0, false, true, {-8, 8, 8, 16}, -1},
+    {Asset::BOX, Role::DECORATION, -96, -24, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, -96, -40, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 64, 40, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 96, 24, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::BOX, Role::DECORATION, 80, 24, 16, 16, 0, 0, false, true, {-5, 5, -8, 0}, -1},
+    {Asset::COLUMN, Role::DECORATION, 80, 32, 16, 32, 0, 0, false, true, {-8, 8, 8, 16}, -1},
+};
+constexpr Point q_points_3[] =
+{
+    {0, 0},
+};
+constexpr AbilityPoint ability_points_3[] =
+{
+    {0, 0, false},
+};
+constexpr Rect collisions_3[] =
+{
+    {0, 0, 0, 0},
+};
+
+constexpr int enemies_4[] = {-1};
+constexpr Object objects_4[] =
+{
+    {Asset::DOOR, Role::DOOR, -112, 0, 16, 32, 0, 0, false, false, {-8, 8, 8, 16}, 0},
+};
+constexpr Point q_points_4[] =
+{
+    {0, 0},
+};
+constexpr AbilityPoint ability_points_4[] =
+{
+    {-88, -48, false},
+    {-56, -48, false},
+    {-24, -48, false},
+    {8, -48, false},
+    {40, -48, false},
+    {72, -48, false},
+    {-88, 48, false},
+};
+constexpr Rect collisions_4[] =
 {
     {0, 0, 0, 0},
 };
@@ -178,19 +319,40 @@ constexpr Rect collisions_1[] =
 constexpr Room rooms[] =
 {
     {static_cast<RoomTemplateId>(420474562), "0805ebc9-a0fb-41f5-a848-6c09785f4c88", "Infierno 1",
-     RoomBackgroundId::ROOM2, false, 0, 0,
+     RoomBackgroundId::ROOM2, false, false, false, false, 0, 0,
      29, 0, enemies_0, -1,
      {objects_0, 39},
      {q_points_0, 1},
      {ability_points_0, 0},
      {collisions_0, 0}},
-    {static_cast<RoomTemplateId>(336391961), "299e46bb-a870-499a-9ab7-551dcfd4de9e", "Boss Random 1",
-     RoomBackgroundId::BOSS_2, true, 0, 0,
+    {static_cast<RoomTemplateId>(336391961), "299e46bb-a870-499a-9ab7-551dcfd4de9e", "Kroak Boss",
+     RoomBackgroundId::BOSS_2, true, false, false, false, 0, 0,
      0, 0, enemies_1, -1,
-     {objects_1, 1},
+     {objects_1, 5},
      {q_points_1, 0},
-     {ability_points_1, 0},
-     {collisions_1, 0}},
+     {ability_points_1, 1},
+     {collisions_1, 7}},
+    {static_cast<RoomTemplateId>(485710362), "34635cc9-e7fc-450e-a66d-b9d455c3cd2c", "Tienda",
+     RoomBackgroundId::MENU_START, false, false, false, true, 0, 0,
+     29, 0, enemies_2, -1,
+     {objects_2, 43},
+     {q_points_2, 0},
+     {ability_points_2, 0},
+     {collisions_2, 11}},
+    {static_cast<RoomTemplateId>(422138341), "6bbbe11b-585e-4972-9d11-6f56b20ca373", "Menu Stairs Resume Portal",
+     RoomBackgroundId::ROOM3, false, true, false, false, 0, 0,
+     14, 0, enemies_3, -1,
+     {objects_3, 17},
+     {q_points_3, 0},
+     {ability_points_3, 0},
+     {collisions_3, 0}},
+    {static_cast<RoomTemplateId>(346630431), "d9b07544-76c1-48e7-87ae-f3957ac7af7d", "Mi primer cuarto",
+     RoomBackgroundId::ROOM2, false, false, true, false, 0, 0,
+     0, 0, enemies_4, -1,
+     {objects_4, 1},
+     {q_points_4, 0},
+     {ability_points_4, 7},
+     {collisions_4, 0}},
 };
 
 constexpr const Room* find(RoomTemplateId template_id)
@@ -213,7 +375,28 @@ constexpr const Room& get(RoomTemplateId template_id)
 constexpr RoomTemplateId template_at(int index)
 {
     for(int room_index = 0; room_index < room_count; ++room_index)
-        if(! rooms[room_index].boss && index-- == 0) return rooms[room_index].template_id;
+        if(! rooms[room_index].boss && ! rooms[room_index].menu_portal_room && ! rooms[room_index].menu_demo_room && ! rooms[room_index].menu_shop_room && index-- == 0) return rooms[room_index].template_id;
+    return RoomTemplateId::FIELD;
+}
+
+constexpr RoomTemplateId menu_demo_template()
+{
+    for(int room_index = 0; room_index < room_count; ++room_index)
+        if(rooms[room_index].menu_demo_room) return rooms[room_index].template_id;
+    return RoomTemplateId::FIELD;
+}
+
+constexpr RoomTemplateId menu_portal_template()
+{
+    for(int room_index = 0; room_index < room_count; ++room_index)
+        if(rooms[room_index].menu_portal_room) return rooms[room_index].template_id;
+    return RoomTemplateId::FIELD;
+}
+
+constexpr RoomTemplateId menu_shop_template()
+{
+    for(int room_index = 0; room_index < room_count; ++room_index)
+        if(rooms[room_index].menu_shop_room) return rooms[room_index].template_id;
     return RoomTemplateId::FIELD;
 }
 

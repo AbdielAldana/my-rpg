@@ -1,0 +1,110 @@
+{
+  "format": "anotherdungeon-room",
+  "schemaVersion": 2,
+  "id": "d9b07544-76c1-48e7-87ae-f3957ac7af7d",
+  "name": "Mi primer cuarto",
+  "menuDemoRoom": true,
+  "description": "",
+  "width": 256,
+  "height": 256,
+  "tileSize": 16,
+  "coordinateSystem": "top-left-pixels",
+  "background": "room2",
+  "backgroundCrop": {
+    "x": 0,
+    "y": 0,
+    "width": 256,
+    "height": 256
+  },
+  "gameGrid": {
+    "x": 8,
+    "y": 48,
+    "cellSize": 16,
+    "columns": 15,
+    "rows": 10
+  },
+  "rules": {
+    "roomType": "standard",
+    "onlyTheseSides": true,
+    "allowedDoorSides": [
+      "left"
+    ],
+    "access": "normal"
+  },
+  "spawn": null,
+  "tiles": [],
+  "collisions": [],
+  "objects": [
+    {
+      "id": "79b40508-6d16-4b91-88e8-552281125f52",
+      "assetId": "door",
+      "x": 8,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 0,
+        "y": 24,
+        "width": 16,
+        "height": 8
+      },
+      "role": "door",
+      "side": null,
+      "rule": "possible",
+      "behavior": null
+    }
+  ],
+  "markers": [
+    {
+      "id": "f8e9e2a5-4662-4c83-b048-0f7868533e1a",
+      "type": "&",
+      "x": 40,
+      "y": 80,
+      "required": false
+    },
+    {
+      "id": "ca0311fd-e759-4e8c-ba89-b2d2ed168551",
+      "type": "&",
+      "x": 72,
+      "y": 80,
+      "required": false
+    },
+    {
+      "id": "835a649b-bbec-4784-98be-b19d4eafafbd",
+      "type": "&",
+      "x": 104,
+      "y": 80,
+      "required": false
+    },
+    {
+      "id": "f84de974-d901-4516-a36b-b7f8e6f7d3f4",
+      "type": "&",
+      "x": 136,
+      "y": 80,
+      "required": false
+    },
+    {
+      "id": "1e50f095-a56e-4ad6-94b2-5a33de2ef3fc",
+      "type": "&",
+      "x": 168,
+      "y": 80,
+      "required": false
+    },
+    {
+      "id": "0b913717-7122-4533-bddf-a0e9392ae6ba",
+      "type": "&",
+      "x": 200,
+      "y": 80,
+      "required": false
+    },
+    {
+      "id": "73f7abda-f515-4a80-97dc-421a0271e72f",
+      "type": "&",
+      "x": 40,
+      "y": 176,
+      "required": false
+    }
+  ]
+}

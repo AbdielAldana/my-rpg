@@ -1,0 +1,1 @@
+gran_nucleo_arcano_bn_gfx.o: gran_nucleo_arcano_bn_gfx.s

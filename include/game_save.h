@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "bn_type_traits.h"
+#include "passive_shop.h"
 
 namespace game_save
 {
@@ -19,6 +20,11 @@ struct Records
     uint32_t best_rooms = 0;
     uint8_t active_items_discovered = 0;
     uint8_t enemies_seen = 0;
+    uint16_t coins = 0;
+    passive_shop::State shop;
+    uint8_t pending_shop_potions = 0;
+    uint8_t pending_shop_keys = 0;
+    uint8_t pending_shop_medikits = 0;
 };
 
 Records& records();
@@ -27,6 +33,7 @@ bool has_run();
 uint8_t* run_buffer();
 int run_size();
 void commit_run(int bytes);
+void commit_records();
 void clear_run();
 
 class Writer

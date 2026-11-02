@@ -10,8 +10,33 @@ namespace
 constexpr int bank_bytes = 16384;
 constexpr int checksum_chunk_bytes = 64;
 constexpr uint32_t save_magic = 0x47535631u;
-constexpr uint32_t save_version = 1;
+constexpr uint32_t save_version_v1 = 1;
+constexpr uint32_t save_version_v2 = 2;
+constexpr uint32_t save_version = 3;
 constexpr uint32_t crc_polynomial = 0xEDB88320u;
+
+struct LegacyRecords
+{
+    uint32_t floors_explored = 0;
+    uint32_t rooms_explored = 0;
+    uint32_t deaths = 0;
+    uint32_t adventurers_saved = 0;
+    uint32_t best_floor = 0;
+    uint32_t best_rooms = 0;
+    uint8_t active_items_discovered = 0;
+    uint8_t enemies_seen = 0;
+    uint16_t coins = 0;
+};
+
+struct LegacyBankHeader
+{
+    uint32_t magic = 0;
+    uint32_t version = 0;
+    uint32_t sequence = 0;
+    uint32_t run_bytes = 0;
+    LegacyRecords records;
+    uint32_t crc32 = 0;
+};
 
 struct BankHeader
 {
@@ -23,7 +48,7 @@ struct BankHeader
     uint32_t crc32 = 0;
 };
 
-static_assert(sizeof(BankHeader) == 48, "Unexpected save header layout");
+static_assert(sizeof(LegacyBankHeader) == 48, "Unexpected legacy save header layout");
 static_assert(sizeof(BankHeader) + max_run_bytes <= bank_bytes, "Save payload exceeds a bank");
 static_assert(bn::sram::size() == bank_bytes * 2, "Save backend requires 32 KB SRAM");
 
@@ -31,6 +56,8 @@ BN_DATA_EWRAM_BSS uint8_t saved_run[max_run_bytes] = {};
 BN_DATA_EWRAM_BSS uint8_t checksum_chunk[checksum_chunk_bytes] = {};
 BN_DATA_EWRAM_BSS Records saved_records = {};
 BN_DATA_EWRAM_BSS BankHeader headers[2] = {};
+BN_DATA_EWRAM_BSS LegacyBankHeader legacy_headers[2] = {};
+BN_DATA_EWRAM_BSS uint32_t bank_versions[2] = {};
 // Zero means no valid bank; one and two identify SRAM banks zero and one.
 BN_DATA_EWRAM_BSS int active_bank_plus_one = 0;
 BN_DATA_EWRAM_BSS uint32_t active_sequence = 0;
@@ -71,23 +98,67 @@ uint32_t metadata_crc(const BankHeader& header)
     crc = field_crc(crc, header.records.best_rooms);
     crc = field_crc(crc, header.records.active_items_discovered);
     crc = field_crc(crc, header.records.enemies_seen);
+    crc = field_crc(crc, header.records.coins);
+    crc = field_crc(crc, header.records.shop.purchased_mask);
+    crc = field_crc(crc, header.records.shop.random_state);
+    crc = field_crc(crc, header.records.shop.options);
+    crc = field_crc(crc, header.records.shop.initialized);
+    crc = field_crc(crc, header.records.pending_shop_potions);
+    crc = field_crc(crc, header.records.pending_shop_keys);
+    crc = field_crc(crc, header.records.pending_shop_medikits);
+    return crc;
+}
+
+uint32_t legacy_metadata_crc(const LegacyBankHeader& header)
+{
+    uint32_t crc = 0xFFFFFFFFu;
+    crc = field_crc(crc, header.version);
+    crc = field_crc(crc, header.sequence);
+    crc = field_crc(crc, header.run_bytes);
+    crc = field_crc(crc, header.records.floors_explored);
+    crc = field_crc(crc, header.records.rooms_explored);
+    crc = field_crc(crc, header.records.deaths);
+    crc = field_crc(crc, header.records.adventurers_saved);
+    crc = field_crc(crc, header.records.best_floor);
+    crc = field_crc(crc, header.records.best_rooms);
+    crc = field_crc(crc, header.records.active_items_discovered);
+    crc = field_crc(crc, header.records.enemies_seen);
+    if(header.version >= save_version_v2)
+        crc = field_crc(crc, header.records.coins);
     return crc;
 }
 
 bool valid_bank(int bank)
 {
-    BankHeader& header = headers[bank];
     int bank_offset = bank * bank_bytes;
-    bn::sram::read_offset(header, bank_offset);
-    if(header.magic != save_magic || header.version != save_version ||
-       header.run_bytes > unsigned(max_run_bytes))
+    LegacyBankHeader& legacy = legacy_headers[bank];
+    bn::sram::read_offset(legacy, bank_offset);
+    if(legacy.magic != save_magic ||
+       (legacy.version != save_version_v1 && legacy.version != save_version_v2 &&
+        legacy.version != save_version) || legacy.run_bytes > unsigned(max_run_bytes))
     {
         return false;
     }
 
-    uint32_t crc = metadata_crc(header);
-    int remaining = int(header.run_bytes);
-    int read_offset = bank_offset + int(sizeof(BankHeader));
+    bank_versions[bank] = legacy.version;
+    uint32_t crc = 0;
+    int remaining = int(legacy.run_bytes);
+    int read_offset = bank_offset;
+    uint32_t expected_crc = 0;
+    if(legacy.version == save_version)
+    {
+        BankHeader& header = headers[bank];
+        bn::sram::read_offset(header, bank_offset);
+        crc = metadata_crc(header);
+        read_offset += int(sizeof(BankHeader));
+        expected_crc = header.crc32;
+    }
+    else
+    {
+        crc = legacy_metadata_crc(legacy);
+        read_offset += int(sizeof(LegacyBankHeader));
+        expected_crc = legacy.crc32;
+    }
     while(remaining > 0)
     {
         int chunk_bytes = remaining < checksum_chunk_bytes ? remaining : checksum_chunk_bytes;
@@ -97,13 +168,18 @@ bool valid_bank(int bank)
         read_offset += chunk_bytes;
         remaining -= chunk_bytes;
     }
-    return (crc ^ 0xFFFFFFFFu) == header.crc32;
+    return (crc ^ 0xFFFFFFFFu) == expected_crc;
 }
 
 bool sequence_is_newer(uint32_t candidate, uint32_t previous)
 {
     uint32_t difference = candidate - previous;
     return difference != 0 && difference < 0x80000000u;
+}
+
+uint32_t bank_sequence(int bank)
+{
+    return bank_versions[bank] == save_version ? headers[bank].sequence : legacy_headers[bank].sequence;
 }
 
 void commit_payload(int bytes)
@@ -156,17 +232,39 @@ bool load()
         return false;
 
     int selected_bank = 0;
-    if(second_valid && (!first_valid || sequence_is_newer(headers[1].sequence, headers[0].sequence)))
+    if(second_valid && (!first_valid || sequence_is_newer(bank_sequence(1), bank_sequence(0))))
         selected_bank = 1;
-    const BankHeader& header = headers[selected_bank];
-    saved_records = header.records;
-    active_sequence = header.sequence;
+    int payload_offset = selected_bank * bank_bytes;
+    if(bank_versions[selected_bank] == save_version)
+    {
+        const BankHeader& header = headers[selected_bank];
+        saved_records = header.records;
+        active_sequence = header.sequence;
+        committed_run_bytes = int(header.run_bytes);
+        payload_offset += int(sizeof(BankHeader));
+    }
+    else
+    {
+        const LegacyBankHeader& header = legacy_headers[selected_bank];
+        const LegacyRecords& legacy = header.records;
+        saved_records.floors_explored = legacy.floors_explored;
+        saved_records.rooms_explored = legacy.rooms_explored;
+        saved_records.deaths = legacy.deaths;
+        saved_records.adventurers_saved = legacy.adventurers_saved;
+        saved_records.best_floor = legacy.best_floor;
+        saved_records.best_rooms = legacy.best_rooms;
+        saved_records.active_items_discovered = legacy.active_items_discovered;
+        saved_records.enemies_seen = legacy.enemies_seen;
+        saved_records.coins = header.version == save_version_v1 ? 0 : legacy.coins;
+        active_sequence = header.sequence;
+        committed_run_bytes = int(header.run_bytes);
+        payload_offset += int(sizeof(LegacyBankHeader));
+    }
     active_bank_plus_one = selected_bank + 1;
-    committed_run_bytes = int(header.run_bytes);
     if(committed_run_bytes > 0)
     {
         bn::span<uint8_t> payload(saved_run, committed_run_bytes);
-        bn::sram::read_span_offset(payload, selected_bank * bank_bytes + int(sizeof(BankHeader)));
+        bn::sram::read_span_offset(payload, payload_offset);
     }
     return true;
 }
@@ -192,6 +290,11 @@ void commit_run(int bytes)
     if(bytes <= 0 || bytes > max_run_bytes)
         return;
     commit_payload(bytes);
+}
+
+void commit_records()
+{
+    commit_payload(committed_run_bytes);
 }
 
 void clear_run()

@@ -1,0 +1,1 @@
+descarga_trina_bn_gfx.o: descarga_trina_bn_gfx.s

@@ -1,0 +1,1 @@
+viento_encantado_bn_gfx.o: viento_encantado_bn_gfx.s

@@ -1,0 +1,1 @@
+bullet_aventure_aliado_bn_gfx.o: bullet_aventure_aliado_bn_gfx.s

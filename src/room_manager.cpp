@@ -72,9 +72,22 @@ void RoomManager::generate_menu_floor()
 
     add_room(RoomTemplateId::TUTORIAL);
     _rooms[0].background_id = RoomBackgroundId::MENU_START;
-    add_room(RoomTemplateId::STAIRS);
-    _rooms[1].background_id = RoomBackgroundId::CAMPFIRE;
+    RoomTemplateId menu_stairs_template = imported_room::menu_portal_template();
+    if(!imported_room::contains(menu_stairs_template))
+        menu_stairs_template = RoomTemplateId::STAIRS;
+    add_room(menu_stairs_template);
+    _rooms[1].background_id = imported_room::contains(menu_stairs_template) ?
+        imported_room::get(menu_stairs_template).background : RoomBackgroundId::CAMPFIRE;
     connect_rooms(0, RoomDirection::UP, 1);
+
+    // La tienda ocupa la ruta izquierda. Derecha y abajo permanecen cerradas.
+    RoomTemplateId menu_shop_template = imported_room::menu_shop_template();
+    if(imported_room::contains(menu_shop_template))
+    {
+        int shop_room_id = add_room(menu_shop_template);
+        _rooms[shop_room_id].background_id = imported_room::get(menu_shop_template).background;
+        connect_rooms(0, RoomDirection::LEFT, shop_room_id);
+    }
 }
 
 bool RoomManager::is_menu_floor() const
@@ -90,11 +103,15 @@ bool RoomManager::saved_floor_valid() const
         return false;
     }
 
-    if(!is_reward_room(_room_count - 1))
+    int reward_id = reward_room_id();
+    int stairs_id = stairs_room_id();
+    if(stairs_id < 0 ||
+       (reward_id >= 0 && stairs_id != reward_id - 1) ||
+       (reward_id < 0 && stairs_id != _room_count - 1))
     {
         return false;
     }
-    RoomTemplateId stairs_template = _rooms[_room_count - 2].template_id;
+    RoomTemplateId stairs_template = _rooms[stairs_id].template_id;
     if(stairs_template != RoomTemplateId::STAIRS && stairs_template != RoomTemplateId::STAIRS_2)
     {
         return false;
@@ -138,7 +155,7 @@ bool RoomManager::saved_floor_valid() const
         {
             if(item.active &&
                (int(item.type) < int(RoomItemType::KEY) ||
-                int(item.type) > int(RoomItemType::ABILITY_FAMILIAR) ||
+                int(item.type) > int(RoomItemType::COIN_SACK) ||
                 item.level < 1 || item.level > 5 ||
                 item.x < -120 || item.x > 120 || item.y < -80 || item.y > 80))
             {
@@ -151,7 +168,7 @@ bool RoomManager::saved_floor_valid() const
 
 bool RoomManager::generate_random_floor(bn::seed_random& random, int room_count, bool tutorial_start)
 {
-    // Cada piso reserva un espacio para la sala de recompensa adicional.
+    // El cuarto de recompensa/boss es una sala adicional opcional.
     if(room_count < 1 || room_count >= max_rooms)
     {
         return false;
@@ -347,6 +364,12 @@ bool RoomManager::generate_random_floor(bn::seed_random& random, int room_count,
                 break;
             }
         }
+    }
+
+    // La semilla decide si este piso tendrá cuarto boss (50% de probabilidad).
+    if(random.get_int(2) != 0)
+    {
+        return true;
     }
 
     const int boss_count = imported_room::boss_room_count;
@@ -654,8 +677,40 @@ bool RoomManager::set_current_room(int room_id)
 }
 
 int RoomManager::room_count() const { return _room_count; }
-int RoomManager::stairs_room_id() const { return _menu_floor ? 1 : (_room_count >= 2 ? _room_count - 2 : -1); }
-int RoomManager::reward_room_id() const { return !_menu_floor && _room_count >= 1 ? _room_count - 1 : -1; }
+int RoomManager::stairs_room_id() const
+{
+    if(_menu_floor)
+    {
+        return _room_count > 1 ? 1 : -1;
+    }
+
+    for(int room_id = _room_count - 1; room_id >= 0; --room_id)
+    {
+        RoomTemplateId template_id = _rooms[room_id].template_id;
+        if(template_id == RoomTemplateId::STAIRS || template_id == RoomTemplateId::STAIRS_2)
+        {
+            return room_id;
+        }
+    }
+    return -1;
+}
+
+int RoomManager::reward_room_id() const
+{
+    if(_menu_floor || _room_count < 1)
+    {
+        return -1;
+    }
+
+    int room_id = _room_count - 1;
+    RoomTemplateId template_id = _rooms[room_id].template_id;
+    if(template_id == RoomTemplateId::REWARD ||
+       (imported_room::contains(template_id) && imported_room::get(template_id).boss))
+    {
+        return room_id;
+    }
+    return -1;
+}
 bool RoomManager::is_reward_room(int room_id) const
 {
     if(_menu_floor || room_id != reward_room_id()) return false;

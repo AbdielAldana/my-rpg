@@ -1,0 +1,334 @@
+{
+    "format": "anotherdungeon-room",
+    "schemaVersion": 1,
+    "id": "6bbbe11b-585e-4972-9d11-6f56b20ca373",
+    "name": "Menu Stairs Resume Portal",
+    "description": "Menu-only room shown while a saved run is available.",
+    "width": 256,
+    "height": 256,
+    "tileSize": 16,
+    "coordinateSystem": "top-left-pixels",
+    "background": "room3",
+    "spawn": {
+        "x": 128,
+        "y": 128
+    },
+    "tiles": [],
+    "collisions": [],
+    "objects": [
+        {
+            "id": "cacdb342-acab-5dca-bcaa-316dd4f5937a",
+            "assetId": "column",
+            "x": 40,
+            "y": 64,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 5,
+                "y": 16,
+                "width": 6,
+                "height": 8
+            },
+            "role": "decoration",
+            "destination": ""
+        },
+        {
+            "id": "58a218e4-de12-5516-9f02-8fb2cb4ee1e5",
+            "assetId": "column",
+            "x": 200,
+            "y": 64,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 5,
+                "y": 16,
+                "width": 6,
+                "height": 8
+            },
+            "role": "decoration",
+            "destination": ""
+        },
+        {
+            "id": "bcbdcbf3-25a9-5255-bf1c-5430b2a8c7ac",
+            "assetId": "stairs",
+            "x": 88,
+            "y": 112,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": false,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "stairs",
+            "destination": ""
+        },
+        {
+            "id": "cdb4f620-5ca8-5664-b374-15ee334a3b85",
+            "assetId": "column",
+            "x": 40,
+            "y": 144,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 5,
+                "y": 16,
+                "width": 6,
+                "height": 8
+            },
+            "role": "decoration",
+            "destination": ""
+        },
+        {
+            "id": "68ee9e25-23bf-5962-84e3-0a4777ffaea1",
+            "assetId": "door",
+            "x": 112,
+            "y": 192,
+            "frame": 0,
+            "rotation": 90,
+            "flipX": false,
+            "solid": false,
+            "hitbox": {
+                "x": 0,
+                "y": 0,
+                "width": 16,
+                "height": 32
+            },
+            "role": "door",
+            "side": "down",
+            "rule": "possible",
+            "destination": "",
+            "access": "normal",
+            "hiddenUntil": ""
+        },
+        {
+            "destination": "",
+            "assetId": "portal",
+            "id": "6e7f9ce2-e951-4cde-9391-55eedbbb23d1",
+            "x": 152,
+            "y": 112,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": false,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "portal"
+        },
+        {
+            "destination": "",
+            "assetId": "table_armor",
+            "id": "6a34231e-77bf-4ae9-87e1-547346684718",
+            "x": 72,
+            "y": 64,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 0,
+                "y": 8,
+                "width": 32,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "table",
+            "id": "a5549b6f-a0d9-459d-8127-cbd57dc47172",
+            "x": 152,
+            "y": 64,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 0,
+                "y": 8,
+                "width": 32,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "seat",
+            "id": "1f9ae292-35c3-4f2b-8a2c-3af51e8750bd",
+            "x": 152,
+            "y": 80,
+            "frame": 1,
+            "rotation": 0,
+            "flipX": false,
+            "solid": false,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "seat",
+            "id": "58a6591d-dab7-4d23-8053-1f2438aa3fcf",
+            "x": 168,
+            "y": 80,
+            "frame": 1,
+            "rotation": 0,
+            "flipX": false,
+            "solid": false,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "library_front",
+            "id": "b92417b6-6a54-4a7b-9b43-83f327d4039e",
+            "x": 120,
+            "y": 48,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 0,
+                "y": 24,
+                "width": 16,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "box",
+            "id": "08a4d1ee-e7d8-40e5-b11f-b32a86f7aff0",
+            "x": 24,
+            "y": 96,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "box",
+            "id": "2356ec1a-b674-4ca6-bdcb-5866f91ccc03",
+            "x": 24,
+            "y": 80,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "box",
+            "id": "d36b9d61-f371-4359-b0bc-0b7c46dca687",
+            "x": 184,
+            "y": 160,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "box",
+            "id": "bd81c442-386e-417e-9bb4-200815bfe99b",
+            "x": 216,
+            "y": 144,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "box",
+            "id": "12f97d26-eb56-4de1-9bbf-3f9f2e84aca6",
+            "x": 200,
+            "y": 144,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 3,
+                "y": 0,
+                "width": 10,
+                "height": 8
+            },
+            "role": "decoration"
+        },
+        {
+            "destination": "",
+            "assetId": "column",
+            "id": "22a3bf25-dee4-44f0-9389-e6c8ac65ee9d",
+            "x": 200,
+            "y": 144,
+            "frame": 0,
+            "rotation": 0,
+            "flipX": false,
+            "solid": true,
+            "hitbox": {
+                "x": 0,
+                "y": 24,
+                "width": 16,
+                "height": 8
+            },
+            "role": "decoration"
+        }
+    ],
+    "markers": [],
+    "roomKind": "stairs",
+    "doorPolicy": "declared-sides-only",
+    "menuPortalRoom": true
+}

@@ -1,0 +1,943 @@
+{
+  "format": "anotherdungeon-room",
+  "schemaVersion": 2,
+  "id": "34635cc9-e7fc-450e-a66d-b9d455c3cd2c",
+  "name": "Tienda",
+  "menuShopRoom": true,
+  "description": "",
+  "width": 256,
+  "height": 256,
+  "tileSize": 16,
+  "coordinateSystem": "top-left-pixels",
+  "background": "menu_inicio",
+  "backgroundCrop": {
+    "x": 0,
+    "y": 0,
+    "width": 256,
+    "height": 256
+  },
+  "gameGrid": {
+    "x": 8,
+    "y": 48,
+    "cellSize": 16,
+    "columns": 15,
+    "rows": 10
+  },
+  "rules": {
+    "roomType": "standard",
+    "onlyTheseSides": true,
+    "allowedDoorSides": [
+      "right"
+    ],
+    "access": "normal"
+  },
+  "spawn": null,
+  "tiles": [],
+  "collisions": [
+    {
+      "x": 25,
+      "y": 97,
+      "width": 208,
+      "height": 13
+    },
+    {
+      "x": 188,
+      "y": 172,
+      "width": 44,
+      "height": 7
+    },
+    {
+      "x": 195,
+      "y": 179,
+      "width": 37,
+      "height": 11
+    },
+    {
+      "x": 171,
+      "y": 179,
+      "width": 24,
+      "height": 11
+    },
+    {
+      "x": 84,
+      "y": 162,
+      "width": 8,
+      "height": 8
+    },
+    {
+      "x": 86,
+      "y": 170,
+      "width": 6,
+      "height": 6
+    },
+    {
+      "x": 84,
+      "y": 189,
+      "width": 8,
+      "height": 1
+    },
+    {
+      "x": 86,
+      "y": 188,
+      "width": 6,
+      "height": 1
+    },
+    {
+      "x": 86,
+      "y": 176,
+      "width": 1,
+      "height": 12
+    },
+    {
+      "x": 87,
+      "y": 176,
+      "width": 21,
+      "height": 12
+    },
+    {
+      "x": 29,
+      "y": 170,
+      "width": 57,
+      "height": 19
+    }
+  ],
+  "objects": [
+    {
+      "id": "c23dfc0d-b64f-4f76-8f0c-e2cc5c20f5fa",
+      "assetId": "door",
+      "x": 232,
+      "y": 112,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": true,
+      "solid": false,
+      "hitbox": {
+        "x": 0,
+        "y": 24,
+        "width": 16,
+        "height": 8
+      },
+      "role": "door",
+      "side": null,
+      "rule": "possible",
+      "behavior": null
+    },
+    {
+      "id": "e1934c8f-041d-41fb-a175-f4ff9f7d2ecc",
+      "assetId": "vase",
+      "x": 24,
+      "y": 64,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "3ea94c46-2505-475b-9c14-cc5352019b66",
+      "assetId": "vase",
+      "x": 24,
+      "y": 80,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "d617b58b-fa43-4e94-814f-7ec299514a9f",
+      "assetId": "vase",
+      "x": 40,
+      "y": 64,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "a21595e0-f2ca-4e23-8bd2-cb1e3e626f39",
+      "assetId": "box",
+      "x": 24,
+      "y": 120,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "abcf9566-4c6e-451c-a03a-bb3c3e35391a",
+      "assetId": "box",
+      "x": 24,
+      "y": 152,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "36494f67-d5e8-4299-913f-cf0316727e28",
+      "assetId": "box",
+      "x": 24,
+      "y": 136,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "0b99e4e8-b7d1-4a32-851e-cbc5727e4dcc",
+      "assetId": "box",
+      "x": 24,
+      "y": 128,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "d8fb4c0b-59d8-40ef-8a76-58f71bd5eac7",
+      "assetId": "box",
+      "x": 24,
+      "y": 168,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "29c53196-a2e1-4d33-a4ad-212e020dcb4a",
+      "assetId": "box",
+      "x": 24,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "4b2615d4-ecaf-4dd7-a7c2-9c33ace4ab51",
+      "assetId": "box",
+      "x": 40,
+      "y": 168,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "65207975-1d60-4160-ada0-56fd7206e4e9",
+      "assetId": "table",
+      "x": 56,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 0,
+        "y": 8,
+        "width": 32,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "7ec5f9e7-71b4-40d3-9253-dc174365b0d1",
+      "assetId": "table",
+      "x": 96,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 0,
+        "y": 8,
+        "width": 32,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "0b85c568-ad10-4b2d-9eef-22c2b416f07e",
+      "assetId": "table",
+      "x": 136,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 0,
+        "y": 8,
+        "width": 32,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "d1c42666-d873-4771-a492-3f51458f8172",
+      "assetId": "table",
+      "x": 176,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 0,
+        "y": 8,
+        "width": 32,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "7eaccfc2-bafa-42ae-afc0-d1dac46fb646",
+      "assetId": "label",
+      "x": 64,
+      "y": 88,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "lever",
+      "behavior": {
+        "type": "lever",
+        "initialState": "initial",
+        "frames": {
+          "initial": 0,
+          "transition": 1,
+          "activated": 2
+        },
+        "staysVisible": true
+      }
+    },
+    {
+      "id": "2071ca5d-0a55-4416-87fe-2c171dace325",
+      "assetId": "label",
+      "x": 104,
+      "y": 88,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "lever",
+      "behavior": {
+        "type": "lever",
+        "initialState": "initial",
+        "frames": {
+          "initial": 0,
+          "transition": 1,
+          "activated": 2
+        },
+        "staysVisible": true
+      }
+    },
+    {
+      "id": "3efd2147-46c8-467d-a51f-f1ea283f07eb",
+      "assetId": "label",
+      "x": 144,
+      "y": 88,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "lever",
+      "behavior": {
+        "type": "lever",
+        "initialState": "initial",
+        "frames": {
+          "initial": 0,
+          "transition": 1,
+          "activated": 2
+        },
+        "staysVisible": true
+      }
+    },
+    {
+      "id": "6b9a0635-5bc1-4ec2-a16b-34b5f957a813",
+      "assetId": "label",
+      "x": 184,
+      "y": 88,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "lever",
+      "behavior": {
+        "type": "lever",
+        "initialState": "initial",
+        "frames": {
+          "initial": 0,
+          "transition": 1,
+          "activated": 2
+        },
+        "staysVisible": true
+      }
+    },
+    {
+      "id": "281b8f70-4a4e-4ad5-b24f-942d64b588e7",
+      "assetId": "sign",
+      "x": 32,
+      "y": 96,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "55b4c798-e3b8-4b82-ba7d-81011c6352b8",
+      "assetId": "sign",
+      "x": 212,
+      "y": 94,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "e204ea28-ee52-4abc-808d-43153cefed5b",
+      "assetId": "seat",
+      "x": 209,
+      "y": 71,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "acf5abd4-8731-4fd4-a2cc-45bd6d7ff4db",
+      "assetId": "player",
+      "x": 209,
+      "y": 65,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "9d1974b4-0a10-4aac-93de-4ea76c2995df",
+      "assetId": "spikes",
+      "x": 64,
+      "y": 110,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "hazard",
+      "alwaysActive": false,
+      "behavior": null
+    },
+    {
+      "id": "f9cdbb19-ea16-4c09-bdd6-121f1569d8b5",
+      "assetId": "spikes",
+      "x": 104,
+      "y": 110,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "hazard",
+      "alwaysActive": false,
+      "behavior": null
+    },
+    {
+      "id": "922c6ede-b8e9-4013-87b6-170189fc71c5",
+      "assetId": "spikes",
+      "x": 143,
+      "y": 110,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "hazard",
+      "alwaysActive": false,
+      "behavior": null
+    },
+    {
+      "id": "a1b28dfd-3f71-4e76-8627-3e20efdf572d",
+      "assetId": "spikes",
+      "x": 184,
+      "y": 110,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "hazard",
+      "alwaysActive": false,
+      "behavior": null
+    },
+    {
+      "id": "931176a2-0674-4c11-9cc1-7acdda6f2906",
+      "assetId": "table_armor",
+      "x": 76,
+      "y": 62,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 0,
+        "y": 8,
+        "width": 32,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "a014eaa6-5ee4-4f50-bb90-d5335917dbbc",
+      "assetId": "library_front",
+      "x": 168,
+      "y": 48,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 0,
+        "y": 24,
+        "width": 16,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "90db1acd-984e-425a-8228-113155672615",
+      "assetId": "box",
+      "x": 216,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "b708c9cf-f465-4e77-84cc-fb51496ce93b",
+      "assetId": "box",
+      "x": 216,
+      "y": 168,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "d64bc4a5-9efd-48ee-a86d-f0fdbbe8b4b9",
+      "assetId": "box",
+      "x": 200,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "2ffa9567-9023-4cfe-ae5a-8bbad2c706f2",
+      "assetId": "box",
+      "x": 200,
+      "y": 168,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "56d8f465-1403-4acc-8b7d-82992f01d9ac",
+      "assetId": "box",
+      "x": 184,
+      "y": 168,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "49ab3715-0a28-470f-a3a5-6cd2f379cdd2",
+      "assetId": "box",
+      "x": 168,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "01e56039-f7b1-472f-8257-588d4c63d640",
+      "assetId": "box",
+      "x": 80,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "df9c9419-27d2-4d50-942c-82e176e48265",
+      "assetId": "box",
+      "x": 96,
+      "y": 176,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "e7568d72-8b97-479d-8803-33b84f896a04",
+      "assetId": "vase",
+      "x": 64,
+      "y": 168,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": true,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "decoration",
+      "behavior": null
+    },
+    {
+      "id": "bf529fba-ed16-49e6-a432-abc591ddd489",
+      "assetId": "mushy",
+      "x": 64,
+      "y": 77,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "enemy": {
+        "spawnMode": "fixed",
+        "patrol": null
+      },
+      "behavior": null
+    },
+    {
+      "id": "2f5f5f07-31d8-465b-8ca9-b0790db6b7eb",
+      "assetId": "mushy",
+      "x": 104,
+      "y": 76,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "enemy": {
+        "spawnMode": "fixed",
+        "patrol": null
+      },
+      "behavior": null
+    },
+    {
+      "id": "2d82f738-a412-42ca-b38f-f2d9421c6647",
+      "assetId": "mushy",
+      "x": 143,
+      "y": 76,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "enemy": {
+        "spawnMode": "fixed",
+        "patrol": null
+      },
+      "behavior": null
+    },
+    {
+      "id": "8b236b6b-62f0-4b08-b6c9-a58a5aa19da8",
+      "assetId": "mushy",
+      "x": 184,
+      "y": 77,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "enemy": {
+        "spawnMode": "fixed",
+        "patrol": null
+      },
+      "behavior": null
+    },
+    {
+      "id": "e6c89748-4f78-40f0-b3af-7d3669d1a82e",
+      "assetId": "plant",
+      "x": 9,
+      "y": 48,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "enemy",
+      "enemy": {
+        "spawnMode": "fixed",
+        "patrol": null
+      },
+      "behavior": null
+    }
+  ],
+  "markers": []
+}

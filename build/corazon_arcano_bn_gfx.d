@@ -1,0 +1,1 @@
+corazon_arcano_bn_gfx.o: corazon_arcano_bn_gfx.s

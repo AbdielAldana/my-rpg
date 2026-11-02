@@ -21,11 +21,12 @@ The logo screen leads to a playable menu floor. Its upper door leads into the
 dungeon. The menu lets you choose a seed, and the map displays it during a run.
 The seed controls the floor layout and its random choices.
 
-Each dungeon floor has one reward room selected from the available boss room
-designs. Its entrance stays hidden until three levers are activated: one at
-the campfire, one by the stairs, and the last in a seed-selected room. Rewards
-in imported boss rooms come from their Q and & markers in the room JSON. The
-stairs lead to the next floor.
+Each dungeon floor has a 50% chance, determined by its seed, to include a reward
+room selected from the available boss room designs. When present, its entrance
+stays hidden until three levers are activated: one at the campfire, one by the
+stairs, and the last in a seed-selected room. Rewards in imported boss rooms
+come from their Q and & markers in the room JSON. The stairs lead to the next
+floor.
 
 Run progress is saved when changing floors and when returning to the main menu
 from the pause menu. Dying clears that run and proposes a new seed. Records
@@ -105,6 +106,19 @@ Use `--dry-run` to preview changes or `--editor-dir PATH` if the editor is
 elsewhere. Then set `"background": "templo_1"` in the room JSON and build the
 game. Running the command again with the same name does not duplicate entries.
 
+### Passive item editor
+
+Run the visual editor from the project root to add passive shop items:
+
+```powershell
+python .\tools\passive_item_editor.py
+```
+
+It previews and copies the indexed BMP, registers its name and price, and
+generates speed, size, fire rate, reserve, projectile count, and firing pattern
+modifiers. Existing passive items can be selected and edited from the list.
+The interface uses the game's sprites and palette.
+
 ## Español
 
 Sitio de prueba temporal: [test.abdielaldana.com](https://test.abdielaldana.com).
@@ -121,8 +135,9 @@ a la mazmorra. Los pisos se generan con una semilla; el menú permite elegirla y
 el mapa la muestra durante la partida. La semilla determina la distribución y
 las elecciones aleatorias del piso.
 
-Cada piso tiene una sala de recompensa elegida entre los diseños boss
-disponibles. Su entrada permanece oculta hasta activar tres palancas: una en la
+Cada piso tiene un 50% de probabilidad, determinada por su semilla, de incluir
+una sala de recompensa elegida entre los diseños boss disponibles. Cuando
+aparece, su entrada permanece oculta hasta activar tres palancas: una en la
 fogata, otra en las escaleras y la última en un cuarto elegido por la semilla.
 Las recompensas de los boss importados dependen de los marcadores Q y & de su
 JSON. Las escaleras llevan al siguiente piso.
@@ -205,3 +220,15 @@ El programa registra el fondo en el juego y en el editor, crea
 editor está en otra ubicación. Luego establece `"background": "templo_1"` en
 el JSON del cuarto y compila el juego. Repetir el comando con el mismo nombre
 no duplica entradas.
+
+### Editor de objetos pasivos
+
+Ejecuta el editor visual desde la raiz del proyecto:
+
+```powershell
+python .\tools\passive_item_editor.py
+```
+
+La interfaz permite seleccionar y editar pasivos existentes, previsualiza el
+sprite con la paleta del juego y registra precio, velocidad, tamano, frecuencia,
+reserva, cantidad de proyectiles y patron de disparo.

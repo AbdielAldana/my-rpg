@@ -1,0 +1,1 @@
+fragmento_de_reapidez_bn_gfx.o: fragmento_de_reapidez_bn_gfx.s

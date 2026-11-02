@@ -1,0 +1,4 @@
+dir C:\devkitPro\devkitARM\bin\arm-none-eabi-g++.exe
+set "DEVKITPRO=C:\devkitPro"
+set "DEVKITARM=C:\devkitPro\devkitARM"
+set "PATH=%DEVKITARM%\bin;%DEVKITPRO%\msys2\usr\bin;%PATH%"

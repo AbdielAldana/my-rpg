@@ -1,0 +1,1 @@
+sello_de_abundancia_bn_gfx.o: sello_de_abundancia_bn_gfx.s

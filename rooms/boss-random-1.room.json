@@ -2,7 +2,7 @@
   "format": "anotherdungeon-room",
   "schemaVersion": 2,
   "id": "299e46bb-a870-499a-9ab7-551dcfd4de9e",
-  "name": "Boss Random 1",
+  "name": "Kroak Boss",
   "description": "",
   "width": 256,
   "height": 256,
@@ -32,12 +32,55 @@
   },
   "spawn": null,
   "tiles": [],
-  "collisions": [],
+  "collisions": [
+    {
+      "x": 168,
+      "y": 144,
+      "width": 16,
+      "height": 32
+    },
+    {
+      "x": 72,
+      "y": 144,
+      "width": 16,
+      "height": 32
+    },
+    {
+      "x": 88,
+      "y": 128,
+      "width": 88,
+      "height": 8
+    },
+    {
+      "x": 168,
+      "y": 136,
+      "width": 8,
+      "height": 8
+    },
+    {
+      "x": 80,
+      "y": 128,
+      "width": 8,
+      "height": 16
+    },
+    {
+      "x": 144,
+      "y": 176,
+      "width": 88,
+      "height": 16
+    },
+    {
+      "x": 24,
+      "y": 176,
+      "width": 88,
+      "height": 16
+    }
+  ],
   "objects": [
     {
       "id": "21d2196c-23ba-4857-b720-6c492c960f2e",
       "assetId": "door",
-      "x": 184,
+      "x": 112,
       "y": 192,
       "frame": 0,
       "rotation": 90,
@@ -50,10 +93,90 @@
         "height": 8
       },
       "role": "door",
-      "side": null,
-      "rule": null,
+      "side": "down",
+      "rule": "possible",
+      "behavior": null
+    },
+    {
+      "id": "6857bcae-494c-44f5-8704-4151abf9bf9e",
+      "assetId": "energy",
+      "x": 88,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "item",
+      "behavior": null
+    },
+    {
+      "id": "789b7ef4-e0c0-4fc8-aaf1-12d33feaee67",
+      "assetId": "energy",
+      "x": 152,
+      "y": 160,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "item",
+      "behavior": null
+    },
+    {
+      "id": "16f3f20a-eb75-45a7-896a-07ad103465db",
+      "assetId": "sprint",
+      "x": 152,
+      "y": 144,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "item",
+      "behavior": null
+    },
+    {
+      "id": "dc19c915-9f65-44ab-8a8f-3a40b9b6ebfa",
+      "assetId": "sprint",
+      "x": 88,
+      "y": 144,
+      "frame": 0,
+      "rotation": 0,
+      "flipX": false,
+      "solid": false,
+      "hitbox": {
+        "x": 3,
+        "y": 0,
+        "width": 10,
+        "height": 8
+      },
+      "role": "item",
       "behavior": null
     }
   ],
-  "markers": []
+  "markers": [
+    {
+      "id": "3d7c7e51-9f15-4e52-9755-88afb3c56fe7",
+      "type": "&",
+      "x": 128,
+      "y": 152,
+      "required": true
+    }
+  ]
 }

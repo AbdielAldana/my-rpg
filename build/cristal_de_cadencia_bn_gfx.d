@@ -1,0 +1,1 @@
+cristal_de_cadencia_bn_gfx.o: cristal_de_cadencia_bn_gfx.s

@@ -1,0 +1,1 @@
+canalizador_rapido_bn_gfx.o: canalizador_rapido_bn_gfx.s

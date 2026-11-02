@@ -575,6 +575,10 @@
         "height": 8
       },
       "role": "enemy",
+      "collisionProfile": "explicit",
+      "runtimeSlot": 0,
+      "spawnMode": "seeded",
+      "authoredAxis": "vertical",      
       "behavior": null
     },
     {
@@ -593,6 +597,10 @@
         "height": 8
       },
       "role": "enemy",
+      "collisionProfile": "explicit",
+      "runtimeSlot": 1,
+      "spawnMode": "seeded",
+      "authoredAxis": "horizontal",      
       "behavior": null
     },
     {
@@ -611,6 +619,10 @@
         "height": 8
       },
       "role": "enemy",
+      "collisionProfile": "explicit",
+      "runtimeSlot": 3,
+      "spawnMode": "seeded",
+      "authoredAxis": "vertical",      
       "behavior": null
     },
     {
@@ -629,6 +641,10 @@
         "height": 8
       },
       "role": "enemy",
+      "collisionProfile": "explicit",
+      "runtimeSlot": 2,
+      "spawnMode": "seeded",
+      "authoredAxis": "horizontal",      
       "behavior": null
     },
     {

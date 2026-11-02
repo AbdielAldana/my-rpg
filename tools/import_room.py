@@ -28,6 +28,7 @@ ASSETS = {
     "label": ("LEVER", 16, 16, 3),
     "campfire": ("CAMPFIRE", 16, 32, 4),
     "stairs": ("STAIRS", 16, 16, 1),
+    "portal": ("PORTAL", 16, 16, 3),
     "door": ("DOOR", 16, 32, 1),
     "door_special": ("DOOR_SPECIAL", 16, 32, 1),
     "door_closed": ("DOOR_CLOSED", 16, 32, 1),
@@ -36,8 +37,8 @@ ASSETS = {
     "box": ("BOX", 16, 16, 1),
     "player": ("PLAYER", 16, 16, 16),
 }
-BACKGROUNDS = {"land": "LAND", "room2": "ROOM2", "room3": "ROOM3", "room_campfire": "CAMPFIRE", "boss_1": "BOSS_1", "boss_2": "BOSS_2", "boss_rat": "BOSS_RAT"}
-ROLES = {"decoration": "DECORATION", "hazard": "HAZARD", "item": "ITEM", "lever": "LEVER", "interactive": "INTERACTIVE", "stairs": "STAIRS", "enemy": "ENEMY", "door": "DOOR"}
+BACKGROUNDS = {"land": "LAND", "room2": "ROOM2", "room3": "ROOM3", "room_campfire": "CAMPFIRE", "menu_inicio": "MENU_START", "boss_1": "BOSS_1", "boss_2": "BOSS_2", "boss_rat": "BOSS_RAT"}
+ROLES = {"decoration": "DECORATION", "hazard": "HAZARD", "item": "ITEM", "lever": "LEVER", "interactive": "INTERACTIVE", "stairs": "STAIRS", "enemy": "ENEMY", "door": "DOOR", "portal": "PORTAL"}
 
 
 def integer(value, label, minimum, maximum):
@@ -154,8 +155,9 @@ def parse_room(data):
     else:
         raise ValueError("spawn must be null or a pixel coordinate object")
     objects = data.get("objects")
-    if not isinstance(objects, list) or not objects or len(objects) > 40:
-        raise ValueError("Expected 1..40 objects")
+    object_limit = 48 if data.get("menuShopRoom", False) else 40
+    if not isinstance(objects, list) or not objects or len(objects) > object_limit:
+        raise ValueError(f"Expected 1..{object_limit} objects")
     ids = set()
     doors = set()
     enemies = []
@@ -191,7 +193,7 @@ def parse_room(data):
             raise ValueError(f"Collectible sprite must use the item role in object {index}")
         if (role == "LEVER") != (asset == "LEVER"):
             raise ValueError(f"Lever sprite must use the lever role in object {index}")
-        if (role == "INTERACTIVE") != (asset == "CAMPFIRE") or (role == "STAIRS") != (asset == "STAIRS"):
+        if (role == "INTERACTIVE") != (asset == "CAMPFIRE") or (role == "STAIRS") != (asset == "STAIRS") or (role == "PORTAL") != (asset == "PORTAL"):
             raise ValueError(f"Campfire and stairs roles must match their sprites in object {index}")
         x = integer(obj.get("x"), f"objects[{index}].x", 0, 256)
         y = integer(obj.get("y"), f"objects[{index}].y", 0, 256)
@@ -206,9 +208,17 @@ def parse_room(data):
         if role == "ENEMY" and (solid or rotation or flip):
             raise ValueError("Enemies require solid=false, rotation=0 and flipX=false")
         enemy = obj.get('enemy')
+        spawn_mode = obj.get('spawnMode')
         if role == "ENEMY" and enemy not in (None, {'spawnMode': 'fixed', 'patrol': None},
                                              {'spawnMode': 'seeded', 'patrol': None}):
             raise ValueError("Generic enemies require fixed or seeded spawn and no authored patrol")
+        if role == "ENEMY":
+            if spawn_mode not in (None, 'fixed', 'seeded'):
+                raise ValueError("Generic enemies require fixed or seeded spawn")
+            if enemy is not None:
+                if spawn_mode is not None and spawn_mode != enemy['spawnMode']:
+                    raise ValueError("Top-level and nested enemy spawnMode values must match")
+                spawn_mode = enemy['spawnMode']
         if asset == "SEAT" and solid:
             raise ValueError("Seats cannot have physical collision")
         if role == "DOOR" and solid:
@@ -280,10 +290,30 @@ def parse_room(data):
             chest_index = index
         flag = lambda value: "true" if value else "false"
         always_active = asset == "SPIKES" and obj.get('alwaysActive', False)
-        seeded = role == "ENEMY" and enemy is not None and enemy['spawnMode'] == 'seeded'
+        seeded = role == "ENEMY" and spawn_mode == 'seeded'
         extra = f", {flag(always_active)}, true" if seeded else (", true" if always_active else "")
         lines.append(f"    {{Asset::{asset}, Role::{role}, {center_x}, {center_y}, {width}, {height}, {frame}, {rotation}, {flag(flip)}, {flag(solid)}, {{{left}, {right}, {top}, {bottom}}}, {direction}{extra}}},")
-    if not doors or (is_boss and len(doors) != 1) or len(enemies) > 4 or decorations < (0 if is_boss else 1) or decorations > 32 or item_count > 4 or lever_count > 1 or campfire_count > 1 or stair_count > 1:
+    menu_portal_room = data.get("menuPortalRoom", False)
+    if type(menu_portal_room) is not bool:
+        raise ValueError("menuPortalRoom must be a boolean")
+    menu_demo_room = data.get("menuDemoRoom", False)
+    if type(menu_demo_room) is not bool:
+        raise ValueError("menuDemoRoom must be a boolean")
+    menu_shop_room = data.get("menuShopRoom", False)
+    if type(menu_shop_room) is not bool:
+        raise ValueError("menuShopRoom must be a boolean")
+    if sum((menu_portal_room, menu_demo_room, menu_shop_room, is_boss)) > 1:
+        raise ValueError("Menu room flags and boss_room cannot be combined")
+    portal_count = sum(1 for obj in objects if obj.get("assetId") == "portal" and obj.get("role") == "portal")
+    if menu_portal_room and (stair_count != 1 or portal_count != 1 or doors != {3} or enemies or is_boss):
+        raise ValueError("A menu portal room needs one down door, one stair, one portal, and no enemies/boss flag")
+    if menu_shop_room and (doors != {1} or stair_count or portal_count):
+        raise ValueError("A menu shop room needs one right door and no stairs or portals")
+    if not menu_portal_room and portal_count:
+        raise ValueError("Portal objects are only supported in menuPortalRoom JSON")
+    enemy_limit = 5 if menu_shop_room else 4
+    lever_limit = 4 if menu_shop_room else 1
+    if not doors or (is_boss and len(doors) != 1) or len(enemies) > enemy_limit or decorations < (0 if is_boss or menu_demo_room else 1) or decorations > 32 or item_count > 4 or lever_count > lever_limit or campfire_count > 1 or stair_count > 1:
         raise ValueError("Room requires a door, 1..32 decorations, at most four skeletons and collectibles, one lever, campfire and stairs")
     markers = data.get('markers', [])
     if not isinstance(markers, list):
@@ -313,7 +343,8 @@ def parse_room(data):
                 raise ValueError("Ability rewards (&) need distinct positions")
             ability_positions.add((x, y))
             ability_points.append(f"{{{x}, {y}, {flag(required)}}}")
-    if len(q_points) > 16 or len(ability_points) > 4 or item_count + len(ability_points) > 4:
+    ability_point_limit = 8 if menu_demo_room else 4
+    if len(q_points) > 16 or len(ability_points) > ability_point_limit or item_count + len(ability_points) > 8:
         raise ValueError("At most 16 Q points and four total authored collectibles/& rewards are supported")
     if is_boss and (len(q_points) > 3 or len(ability_points) > 1):
         raise ValueError("Boss rooms support three Q reward points and one & ability point")
@@ -333,7 +364,8 @@ def parse_room(data):
         collision_lines.append(f"{{{rx - 128}, {ry - 128}, {rw}, {rh}}}")
     return {"id": room_id, "name": data.get("name", "Imported room"),
             "background": background, "spawn_x": spawn_x, "spawn_y": spawn_y,
-            "boss": is_boss,
+            "boss": is_boss, "menu_portal_room": menu_portal_room,
+            "menu_demo_room": menu_demo_room, "menu_shop_room": menu_shop_room,
             "decoration_count": decorations, "enemy_indices": enemies,
             "chest_index": chest_index, "objects": lines,
             "q_points": q_points, "ability_points": ability_points,
@@ -396,8 +428,8 @@ def generate_catalog(entries):
         "#ifndef IMPORTED_ROOM_H", "#define IMPORTED_ROOM_H", "",
         '#include "room_manager.h"', '#include "sprite_collision.h"', "",
         "namespace imported_room", "{", "",
-        "enum class Asset { TABLE, LIBRARY_FRONT, LIBRARY_BACK, COLUMN, SEAT, VASE, ROCK, SIGN, AXE, SPIKES, SKELETON, BAT, PLANT, MUSHY, CHEST, KEY, ENERGY, SPRINT, LEVER, CAMPFIRE, STAIRS, DOOR, DOOR_SPECIAL, DOOR_CLOSED, DOOR_SPECIAL_CLOSED, TABLE_ARMOR, BOX, PLAYER };",
-        "enum class Role { DECORATION, ENEMY, DOOR, HAZARD, ITEM, LEVER, INTERACTIVE, STAIRS };", "",
+        "enum class Asset { TABLE, LIBRARY_FRONT, LIBRARY_BACK, COLUMN, SEAT, VASE, ROCK, SIGN, AXE, SPIKES, SKELETON, BAT, PLANT, MUSHY, CHEST, KEY, ENERGY, SPRINT, LEVER, CAMPFIRE, STAIRS, PORTAL, DOOR, DOOR_SPECIAL, DOOR_CLOSED, DOOR_SPECIAL_CLOSED, TABLE_ARMOR, BOX, PLAYER };",
+        "enum class Role { DECORATION, ENEMY, DOOR, HAZARD, ITEM, LEVER, INTERACTIVE, STAIRS, PORTAL };", "",
         "struct Object", "{", "    Asset asset;", "    Role role;",
         "    int x;", "    int y;", "    int width;", "    int height;",
         "    int frame;", "    int rotation;", "    bool flip_x;", "    bool solid;",
@@ -417,7 +449,7 @@ def generate_catalog(entries):
         "    constexpr const T& operator[](int index) const { return data[index]; }",
         "};", "",
         "struct Room", "{", "    RoomTemplateId template_id;",
-        "    const char* id;", "    const char* name;", "    RoomBackgroundId background;", "    bool boss;",
+        "    const char* id;", "    const char* name;", "    RoomBackgroundId background;", "    bool boss;", "    bool menu_portal_room;", "    bool menu_demo_room;", "    bool menu_shop_room;",
         "    int spawn_x;", "    int spawn_y;", "    int decoration_count;",
         "    int enemy_count;", "    const int* enemy_indices;", "    int chest_index;",
         "    ObjectRange objects;",
@@ -435,7 +467,7 @@ def generate_catalog(entries):
         "                return &object;", "        return nullptr;", "    }", "};", "",
         f"constexpr int room_count = {len(rooms)};",
         f"constexpr int boss_room_count = {sum(1 for room in rooms if room['boss'])};",
-        f"constexpr int ordinary_room_count = {sum(1 for room in rooms if not room['boss'])};",
+        f"constexpr int ordinary_room_count = {sum(1 for room in rooms if not room['boss'] and not room['menu_portal_room'] and not room['menu_demo_room'] and not room['menu_shop_room'])};",
         f"constexpr int max_decoration_count = {max_decorations};",
         f"constexpr int max_enemy_count = {max_enemies};", "",
         "// Safe empty range for non-imported rooms; no runtime construction/RNG.",
@@ -446,7 +478,7 @@ def generate_catalog(entries):
         "constexpr AbilityPoint empty_abilities[] = {{0, 0, false}};",
         "constexpr Rect empty_rects[] = {{0, 0, 0, 0}};",
         'constexpr Room empty_room = {RoomTemplateId::FIELD, "", "", RoomBackgroundId::LAND, false,',
-        "    0, 0, 0, 0, empty_enemies, -1, {empty_objects, 0},",
+        "    false, false, false, 0, 0, 0, 0, empty_enemies, -1, {empty_objects, 0},",
         "    {empty_points, 0}, {empty_abilities, 0}, {empty_rects, 0}};", ""
     ]
     for index, room in enumerate(rooms):
@@ -466,7 +498,7 @@ def generate_catalog(entries):
         template = ("RoomTemplateId::IMPORTED" if room["id"] == LEGACY_ROOM_ID
                     else f"static_cast<RoomTemplateId>({room['template']})")
         lines += [f"    {{{template}, {cpp_string(room['id'])}, {cpp_string(room['name'])},",
-                  f"     RoomBackgroundId::{room['background']}, {'true' if room['boss'] else 'false'}, {room['spawn_x']}, {room['spawn_y']},",
+                  f"     RoomBackgroundId::{room['background']}, {'true' if room['boss'] else 'false'}, {'true' if room['menu_portal_room'] else 'false'}, {'true' if room['menu_demo_room'] else 'false'}, {'true' if room['menu_shop_room'] else 'false'}, {room['spawn_x']}, {room['spawn_y']},",
                   f"     {room['decoration_count']}, {len(room['enemy_indices'])}, enemies_{index}, {room['chest_index']},",
                   f"     {{objects_{index}, {len(room['objects'])}}},",
                   f"     {{q_points_{index}, {len(room['q_points'])}}},",
@@ -486,7 +518,19 @@ def generate_catalog(entries):
               "    return room ? *room : empty_room;", "}", "",
               "constexpr RoomTemplateId template_at(int index)", "{",
               "    for(int room_index = 0; room_index < room_count; ++room_index)",
-              "        if(! rooms[room_index].boss && index-- == 0) return rooms[room_index].template_id;",
+              "        if(! rooms[room_index].boss && ! rooms[room_index].menu_portal_room && ! rooms[room_index].menu_demo_room && ! rooms[room_index].menu_shop_room && index-- == 0) return rooms[room_index].template_id;",
+              "    return RoomTemplateId::FIELD;", "}", "",
+              "constexpr RoomTemplateId menu_demo_template()", "{",
+              "    for(int room_index = 0; room_index < room_count; ++room_index)",
+              "        if(rooms[room_index].menu_demo_room) return rooms[room_index].template_id;",
+              "    return RoomTemplateId::FIELD;", "}", "",
+              "constexpr RoomTemplateId menu_portal_template()", "{",
+              "    for(int room_index = 0; room_index < room_count; ++room_index)",
+              "        if(rooms[room_index].menu_portal_room) return rooms[room_index].template_id;",
+              "    return RoomTemplateId::FIELD;", "}", "",
+              "constexpr RoomTemplateId menu_shop_template()", "{",
+              "    for(int room_index = 0; room_index < room_count; ++room_index)",
+              "        if(rooms[room_index].menu_shop_room) return rooms[room_index].template_id;",
               "    return RoomTemplateId::FIELD;", "}", "",
               "constexpr RoomTemplateId boss_template_at(int index)", "{",
               "    for(int room_index = 0; room_index < room_count; ++room_index)",

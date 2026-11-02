@@ -1,0 +1,1 @@
+portal_16x16_animate_bn_gfx.o: portal_16x16_animate_bn_gfx.s

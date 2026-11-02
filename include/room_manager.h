@@ -66,7 +66,9 @@ enum class RoomItemType
     ABILITY_VIEW_ALL_MAP,
     ABILITY_MASTER_KEY,
     ABILITY_BOMB,
-    ABILITY_FAMILIAR
+    ABILITY_FAMILIAR,
+    MEDIKIT,
+    COIN_SACK
 };
 
 struct RoomItem

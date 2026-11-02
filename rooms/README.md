@@ -83,8 +83,10 @@ pero no sustituyen la entrada por puerta.
 Los diseños v2 con `rules.roomType: "boss"` y `rules.access: "three_levers"`
 ocupan el cuarto de recompensa del piso. Deben declarar exactamente un lado
 en `allowedDoorSides`, tener `onlyTheseSides: true` y una puerta en ese lado.
-La semilla escoge un diseño boss por piso entre los JSON disponibles y el
-perfil nativo `boss_1_ant`; estos JSON no entran al grupo de cuartos normales.
+La semilla decide con 50% de probabilidad si el piso incluye esta sala. Si
+aparece, escoge un diseño boss entre los JSON disponibles y el perfil nativo
+`boss_1_ant`; estos JSON no entran al grupo de cuartos normales. La misma
+semilla siempre produce la misma aparición y el mismo diseño.
 El lado declarado determina la conexión, y `rotation` gira el sprite. Se
 admiten los fondos `boss_1` y `boss_2`. Si el diseño elegido no cabe, se
 prueban las otras variantes en orden estable.
